@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { CrudModule } from './crud/crud.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { CrudModule } from './crud/crud.module';
       }),
     }),
     EventEmitterModule.forRoot(),
-    CrudModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
