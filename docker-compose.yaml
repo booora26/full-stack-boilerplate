@@ -1,0 +1,45 @@
+version: '3'
+services:
+  postgres:
+    image: 'postgres'
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=db
+    ports:
+      - "5009:5432"
+  redis:
+    image: 'redis:alpine'
+    ports:
+      - "6381:6379"
+  server:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./server
+    volumes:
+      - ./server:/app
+      - node_modules_server:/app/node_modules
+    # command: yarn run start:debug
+    ports:
+      - "4009:3000"
+      - "9229:9229"
+    environment:
+      - PGHOST=postgres
+      - PGPORT=5009
+      - PGUSER=postgres
+      - PGPASSWORD=123
+      - PGDATABASE=db
+  client:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./client
+    volumes:
+        - ./client:/app
+        - node_modules_client:/app/node_modules
+    ports:
+      - "3000:8080"
+    depends_on:
+      - server
+volumes:
+  node_modules_server:
+  node_modules_client:
