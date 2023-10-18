@@ -1,9 +1,13 @@
 export interface ICrudService<T> {
-  findAll(skip: number, take: number | null, relations: string[]): Promise<T[]>;
+  findAll(
+    skip?: number,
+    take?: number | null,
+    relations?: string[],
+  ): Promise<T[]>;
   findActive(
-    skip: number,
-    take: number | null,
-    relations: string[],
+    skip?: number,
+    take?: number | null,
+    relations?: string[],
   ): Promise<T[]>;
   findOne(id: number): Promise<T>;
   create(newEntity: T): Promise<T>;

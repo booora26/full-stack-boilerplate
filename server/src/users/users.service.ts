@@ -8,9 +8,18 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 @Injectable()
 export class UsersService extends CrudService<UserEntity> {
   constructor(
-    @InjectRepository(UserEntity) repo: Repository<UserEntity>,
+    @InjectRepository(UserEntity)
+    protected readonly repo: Repository<UserEntity>,
     eventEmitter: EventEmitter2,
   ) {
     super(repo, eventEmitter);
+  }
+
+  async findByEmail(email: string) {
+    try {
+      return await this.repo.findOne({ where: { email: email } });
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 }

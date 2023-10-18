@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import passport from 'passport';
+import * as passport from 'passport';
 import * as session from 'express-session';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import Redis from 'ioredis';
@@ -44,15 +44,14 @@ async function bootstrap() {
           parseInt(configService.get<string>('SESS_COOKIE_MAX_AGE')) *
           60 *
           1000,
-        // maxAge: 90000
       },
       name: configService.get<string>('SESS_NAME'),
       rolling: configService.get<boolean>('SESS_ROLLING'),
     }),
   );
 
-  // app.use(passport.initialize());
-  // app.use(passport.session());
+  app.use(passport.initialize());
+  app.use(passport.session());
   app.enableCors({ credentials: true, origin: true });
 
   await app.listen(3000);

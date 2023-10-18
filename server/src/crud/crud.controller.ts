@@ -31,9 +31,9 @@ export class CrudController<T extends CrudEntity> {
   @Get()
   // @UseGuards(DinamicPermissionGuard)
   async findAll(
-    @Query('skip') skip = 0,
-    @Query('take') take: number | null = null,
-    @Query('relations') relations: string[],
+    @Query('skip') skip?: number | null,
+    @Query('take') take?: number | null,
+    @Query('relations') relations?: string[],
   ) {
     try {
       return await this.service.findAll(skip, take, relations);
@@ -45,9 +45,9 @@ export class CrudController<T extends CrudEntity> {
   @Get('active')
   // @UseGuards(DinamicPermissionGuard)
   async findActive(
-    @Query('skip') skip = 0,
-    @Query('take') take: number | null = null,
-    @Query('relations') relations: string[],
+    @Query('skip') skip?: number | null,
+    @Query('take') take?: number | null,
+    @Query('relations') relations?: string[],
   ) {
     try {
       return await this.service.findActive(skip, take, relations);

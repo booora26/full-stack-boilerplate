@@ -8,7 +8,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 @Injectable()
 export class CrudService<T extends CrudEntity> implements ICrudService<T> {
   constructor(
-    @InjectRepository(CrudEntity) private repo: Repository<CrudEntity>,
+    @InjectRepository(CrudEntity)
+    protected readonly repo: Repository<CrudEntity>,
     private eventEmitter: EventEmitter2,
   ) {}
   async create(newEntity: T): Promise<T> {
@@ -21,7 +22,7 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       throw new Error(err);
     }
   }
-  findAll(skip: number, take: number, relations: string[]): Promise<T[]> {
+  findAll(skip?: number, take?: number, relations?: string[]): Promise<T[]> {
     try {
       return this.repo.find({
         order: { id: 'ASC' },
@@ -33,7 +34,7 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       throw new Error(err);
     }
   }
-  findActive(skip: number, take: number, relations: string[]): Promise<T[]> {
+  findActive(skip?: number, take?: number, relations?: string[]): Promise<T[]> {
     try {
       return this.repo.find({
         where: { isActive: true },
