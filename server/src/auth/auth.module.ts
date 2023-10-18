@@ -4,17 +4,24 @@ import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './local.strategy';
-import { LocalSerializer } from './serializer/local.serializer';
+import { SessionSerializer } from './serializer/session.serializer';
 import { AuthenticatedGuard } from './guard/authenticated.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { GoogleStrategy } from './google.strategy';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [UsersModule, PassportModule.register({ session: true })],
+  imports: [
+    UsersModule,
+    ConfigModule,
+    PassportModule.register({ session: true }),
+  ],
   controllers: [AuthController],
   providers: [
     AuthService,
-    LocalSerializer,
+    SessionSerializer,
     LocalStrategy,
+    GoogleStrategy,
     { provide: APP_GUARD, useClass: AuthenticatedGuard }, // omogucavan da Guard postane globalni
   ],
   exports: [AuthService],

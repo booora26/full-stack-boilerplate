@@ -6,13 +6,16 @@ import { CrudEntity } from '../../crud/crud.entity';
 export class UserEntity extends CrudEntity {
   @Column({ unique: true })
   email: string;
-  @Column()
-  password: string;
-  @Column()
-  salt: string;
+  @Column({ nullable: true })
+  password?: string;
+  @Column({ nullable: true })
+  salt?: string;
+  @Column({ default: false })
+  externalProvider: boolean;
 
   @BeforeInsert()
   async hashPassword() {
+    if (this.externalProvider === true) return;
     this.salt = crypto.randomBytes(16).toString('hex');
     const hashedPassword = crypto
       .pbkdf2Sync(this.password, this.salt, 1000, 64, `sha512`)
