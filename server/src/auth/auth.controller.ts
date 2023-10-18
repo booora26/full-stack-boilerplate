@@ -13,6 +13,7 @@ import { LocalAuthGuard } from './guard/local-auth.guard';
 import { Public } from './decotators/public.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { GoogleGuard } from './guard/google.guard';
+import { GitHubGuard } from './guard/github.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -44,6 +45,17 @@ export class AuthController {
   @Public()
   @Get('google/callback')
   async googleAuthRedirect(@Request() req, @Response() res) {
-    return this.authService.googleLogIn(req, res);
+    return this.authService.otherLogIn(req, res);
+  }
+  @UseGuards(GitHubGuard)
+  @Public()
+  @Get('github')
+  async githubAuth(@Request() req) {}
+
+  @UseGuards(GitHubGuard)
+  @Public()
+  @Get('github/callback')
+  async githubAuthRedirect(@Request() req, @Response() res) {
+    return this.authService.otherLogIn(req, res);
   }
 }

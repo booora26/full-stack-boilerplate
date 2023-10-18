@@ -1,16 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import { Strategy } from 'passport-github2';
 import { AuthService } from './auth.service';
 
 @Injectable()
-export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
+export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
   constructor(private authService: AuthService) {
     super({
-      clientID:
-        '295303506149-s29dmujtk4l7svc1e5rvif8dlte027de.apps.googleusercontent.com',
-      clientSecret: 'kYSCx_5Ucnttg0DuiE_EdMs_',
-      callbackURL: 'http://localhost:4010/auth/google/callback',
-      scope: ['email', 'profile'],
+      clientID: '127b1911339a83de08a8',
+      clientSecret: '02d7e0c243c64fef24f90aba64b13fa2a6e3f11a',
+      callbackURL: 'http://localhost:4010/auth/github/callback',
     });
   }
 
@@ -18,23 +17,17 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     accessToken: string,
     refreshToken: string,
     profile: any,
-    // done: VerifyCallback,
+    done: any,
   ): Promise<any> {
-    console.log('2 - passport lokalna strategija validate');
+    console.log('2 - passport github strategija validate');
 
-    const { name, emails, photos } = profile;
+    const { emails, provider } = profile;
+
     const email = emails[0].value;
-    // const user = {
-    //   email: emails[0].value,
-    //   firstName: name.givenName,
-    //   lastName: name.familyName,
-    //   photo: photos[0].value,
-    //   accessToken,
-    // };
-    const provider = 'other';
+
     const user = await this.authService.validateUser(provider, email);
 
-    console.log('google user', user);
+    console.log(`${provider} profile`, profile);
     return user;
   }
 }

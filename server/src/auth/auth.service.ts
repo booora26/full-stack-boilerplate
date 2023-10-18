@@ -12,6 +12,7 @@ export class AuthService {
     password?: string,
   ): Promise<any> {
     console.log('3 - auth service ValidateUser');
+    console.log('email', email);
 
     const user = await this.usersService.findByEmail(email);
     if (
@@ -23,15 +24,15 @@ export class AuthService {
       const { salt, ...result } = user;
       return result;
     }
-    if (provider === 'other' && user) {
-      console.log('social auth');
+    if (provider !== 'local' && user) {
+      console.log(`${provider} auth`);
 
       const { password, salt, ...result } = user;
       return result;
     }
 
-    if (provider === 'other') {
-      console.log('social new user');
+    if (provider !== 'local') {
+      console.log(`${provider} new user`);
 
       const newUser = new UserEntity();
       newUser.email = email;
@@ -56,9 +57,9 @@ export class AuthService {
     req.session.destroy;
   }
 
-  async googleLogIn(req, res) {
+  async otherLogIn(req, res) {
     if (!req.user) {
-      return console.log('No Google user');
+      return console.log('No user');
     }
     return res.redirect('http://localhost:3010');
   }

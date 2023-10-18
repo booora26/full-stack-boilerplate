@@ -22,9 +22,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     profile: any,
     // done: VerifyCallback,
   ): Promise<any> {
-    console.log('2 - passport lokalna strategija validate');
+    console.log('2 - passport google strategija validate');
 
-    const { name, emails, photos } = profile;
+    const { name, emails, photos, provider } = profile;
     const email = emails[0].value;
     // const user = {
     //   email: emails[0].value,
@@ -33,10 +33,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     //   photo: photos[0].value,
     //   accessToken,
     // };
-    const provider = 'other';
     const user = await this.authService.validateUser(provider, email);
 
-    console.log('google user', user);
+    console.log(`${provider} profile`, profile);
+
     return user;
   }
 }

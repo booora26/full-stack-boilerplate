@@ -9,6 +9,7 @@ import { AuthenticatedGuard } from './guard/authenticated.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { GoogleStrategy } from './google.strategy';
 import { ConfigModule } from '@nestjs/config';
+import { GitHubStrategy } from './github.strategy';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ConfigModule } from '@nestjs/config';
     SessionSerializer,
     LocalStrategy,
     GoogleStrategy,
+    GitHubStrategy,
     { provide: APP_GUARD, useClass: AuthenticatedGuard }, // omogucavan da Guard postane globalni
   ],
   exports: [AuthService],
