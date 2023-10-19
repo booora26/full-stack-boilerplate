@@ -1,4 +1,4 @@
-import { BeforeInsert, Column, Entity } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
 import * as crypto from 'crypto';
 import { CrudEntity } from '../../crud/crud.entity';
 
@@ -15,7 +15,18 @@ export class UserEntity extends CrudEntity {
 
   @BeforeInsert()
   async hashPassword() {
+    console.log('create password');
     if (this.externalProvider === true) return;
+    this.salt = crypto.randomBytes(16).toString('hex');
+    const hashedPassword = crypto
+      .pbkdf2Sync(this.password, this.salt, 1000, 64, `sha512`)
+      .toString(`hex`);
+    this.password = hashedPassword;
+  }
+
+  @BeforeUpdate()
+  async updateHashPassword() {
+    console.log('update password');
     this.salt = crypto.randomBytes(16).toString('hex');
     const hashedPassword = crypto
       .pbkdf2Sync(this.password, this.salt, 1000, 64, `sha512`)

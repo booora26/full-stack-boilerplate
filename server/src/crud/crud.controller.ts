@@ -16,7 +16,7 @@ import { CrudService } from './crud.service';
 
 @Controller()
 export class CrudController<T extends CrudEntity> {
-  constructor(private readonly service: CrudService<T>) {}
+  constructor(protected readonly service: CrudService<T>) {}
 
   @Post()
   async create(@Body() createBaseDto: T) {

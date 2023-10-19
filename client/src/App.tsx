@@ -14,6 +14,8 @@ function App() {
       <br />
       <a href='http://localhost:4010/auth/github'>GitHub</a>
       <br />
+      <a href='http://localhost:4010/users/16/impersonate'>Impersonate</a>
+      <br />
       <a href='http://localhost:4010/auth/logout'>LogOut</a>
     </>
   )

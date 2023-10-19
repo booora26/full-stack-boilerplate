@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-github2';
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
@@ -17,7 +17,6 @@ export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
     accessToken: string,
     refreshToken: string,
     profile: any,
-    done: any,
   ): Promise<any> {
     console.log('2 - passport github strategija validate');
 
@@ -26,6 +25,10 @@ export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
     const email = emails[0].value;
 
     const user = await this.authService.validateUser(provider, email);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
 
     console.log(`${provider} profile`, profile);
     return user;

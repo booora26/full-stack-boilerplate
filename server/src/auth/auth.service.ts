@@ -6,6 +6,19 @@ import { UserEntity } from '../users/entities/user.entity';
 export class AuthService {
   constructor(private usersService: UsersService) {}
 
+  async register(entity) {
+    const { email, password } = entity;
+    const user = await this.usersService.findByEmail(email);
+
+    if (!user.password) {
+      return await this.usersService.update(user.id, {
+        password,
+      });
+    }
+
+    return this.usersService.create(entity);
+  }
+
   async validateUser(
     provider: string,
     email: string,
@@ -18,6 +31,7 @@ export class AuthService {
     if (
       provider === 'local' &&
       user &&
+      user.password &&
       (await user.validatePassword(password))
     ) {
       console.log('lokalna auth');
@@ -51,10 +65,16 @@ export class AuthService {
       if (err) {
         return err;
       }
+      // req.session.destroy;
       res.redirect('http://localhost:3010');
     });
     // req.session.cookie.maxAge = 0;
     req.session.destroy;
+  }
+
+  async logOutImpersonateUser(req, res) {
+    req.session.passport.user = req.session.originalUser;
+    res.redirect('http://localhost:3010');
   }
 
   async otherLogIn(req, res) {

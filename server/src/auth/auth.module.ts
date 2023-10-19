@@ -3,13 +3,13 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from './local.strategy';
+import { LocalStrategy } from './strategies/local.strategy';
 import { SessionSerializer } from './serializer/session.serializer';
 import { AuthenticatedGuard } from './guard/authenticated.guard';
 import { APP_GUARD } from '@nestjs/core';
-import { GoogleStrategy } from './google.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
 import { ConfigModule } from '@nestjs/config';
-import { GitHubStrategy } from './github.strategy';
+import { GitHubStrategy } from './strategies/github.strategy';
 
 @Module({
   imports: [

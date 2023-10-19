@@ -5,15 +5,16 @@ import {
   Request,
   Response,
   Get,
-  Session,
   Req,
+  Body,
+  Session,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guard/local-auth.guard';
 import { Public } from './decotators/public.decorator';
-import { AuthGuard } from '@nestjs/passport';
 import { GoogleGuard } from './guard/google.guard';
 import { GitHubGuard } from './guard/github.guard';
+import { UsersService } from '../users/users.service';
 
 @Controller('auth')
 export class AuthController {
@@ -23,11 +24,22 @@ export class AuthController {
   @Public()
   @Post('login')
   async login(@Request() req) {
-    console.log('8 - login controler');
+    console.log('8 - local login controler');
+  }
+  @Public()
+  @Post('register')
+  async register(@Body() entity: any) {
+    return this.authService.register(entity);
   }
 
   @Get('logout')
   async logout(@Request() req, @Response() res) {
+    if (req.session.passport.user.email !== req.session.originalUser.email) {
+      console.log('not', req.session.passport.user, req.session.originalUser);
+
+      return this.authService.logOutImpersonateUser(req, res);
+    }
+    console.log('eq', req.session.passport.user, req.session.originalUser);
     return this.authService.logOut(req, res);
   }
 
@@ -39,7 +51,9 @@ export class AuthController {
   @UseGuards(GoogleGuard)
   @Public()
   @Get('google')
-  async googleAuth(@Request() req) {}
+  async googleAuth(@Request() req) {
+    console.log('8 - google login controler');
+  }
 
   @UseGuards(GoogleGuard)
   @Public()
@@ -50,7 +64,9 @@ export class AuthController {
   @UseGuards(GitHubGuard)
   @Public()
   @Get('github')
-  async githubAuth(@Request() req) {}
+  async githubAuth(@Request() req) {
+    console.log('8 - github login controler');
+  }
 
   @UseGuards(GitHubGuard)
   @Public()
