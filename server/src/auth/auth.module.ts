@@ -10,6 +10,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { ConfigModule } from '@nestjs/config';
 import { GitHubStrategy } from './strategies/github.strategy';
+import { ImpersonateStrategy } from './strategies/impersonate.strategy';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { GitHubStrategy } from './strategies/github.strategy';
     LocalStrategy,
     GoogleStrategy,
     GitHubStrategy,
+    ImpersonateStrategy,
     { provide: APP_GUARD, useClass: AuthenticatedGuard }, // omogucavan da Guard postane globalni
   ],
   exports: [AuthService],

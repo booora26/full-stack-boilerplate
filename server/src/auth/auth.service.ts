@@ -25,9 +25,15 @@ export class AuthService {
     password?: string,
   ): Promise<any> {
     console.log('3 - auth service ValidateUser');
-    console.log('email', email);
 
     const user = await this.usersService.findByEmail(email);
+    console.log(provider);
+    if (provider === 'impersonate' && user) {
+      console.log('impersonate auth');
+
+      const { password, salt, ...result } = user;
+      return result;
+    }
     if (
       provider === 'local' &&
       user &&
@@ -52,7 +58,6 @@ export class AuthService {
       newUser.email = email;
       newUser.externalProvider = true;
       return await this.usersService.create(newUser);
-      console.log('social new user');
     }
 
     console.log('no auth');

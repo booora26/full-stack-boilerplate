@@ -8,10 +8,10 @@ export class SessionSerializer extends PassportSerializer {
   constructor(private readonly usersService: UsersService) {
     super();
   }
-  async serializeUser(user: UserEntity, done: CallableFunction) {
+  async serializeUser(user: UserEntity, done?: CallableFunction) {
     console.log('6 - serialize', user);
-    const { email } = user;
-    done(null, { email });
+    const { id, email, isActive } = user;
+    done(null, { id, email, isActive });
   }
   async deserializeUser(user: UserEntity, done: CallableFunction) {
     console.log('deserialize', user);

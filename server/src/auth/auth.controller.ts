@@ -14,7 +14,6 @@ import { LocalAuthGuard } from './guard/local-auth.guard';
 import { Public } from './decotators/public.decorator';
 import { GoogleGuard } from './guard/google.guard';
 import { GitHubGuard } from './guard/github.guard';
-import { UsersService } from '../users/users.service';
 
 @Controller('auth')
 export class AuthController {
@@ -34,18 +33,18 @@ export class AuthController {
 
   @Get('logout')
   async logout(@Request() req, @Response() res) {
-    if (req.session.passport.user.email !== req.session.originalUser.email) {
-      console.log('not', req.session.passport.user, req.session.originalUser);
+    const originalUser = req.session.originalUser;
+    const currentUser = req.session.passport.user;
 
+    if (originalUser && currentUser.email !== originalUser.email) {
       return this.authService.logOutImpersonateUser(req, res);
     }
-    console.log('eq', req.session.passport.user, req.session.originalUser);
     return this.authService.logOut(req, res);
   }
 
   @Get()
   async authenticate(@Req() req) {
-    return req.user;
+    return { currentUser: req.user, originalUser: req.session.originalUser };
   }
 
   @UseGuards(GoogleGuard)
