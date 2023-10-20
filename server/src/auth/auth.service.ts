@@ -78,7 +78,7 @@ export class AuthService {
   }
 
   async logOutImpersonateUser(req, res) {
-    req.session.passport.user = req.session.originalUser;
+    req.session.passport.user = req.user.originalUser;
     res.redirect('http://localhost:3010');
   }
 

@@ -33,18 +33,21 @@ export class AuthController {
 
   @Get('logout')
   async logout(@Request() req, @Response() res) {
-    const originalUser = req.session.originalUser;
-    const currentUser = req.session.passport.user;
+    // const originalUser = req.session.originalUser;
+    // const currentUser = req.session.passport.user;
 
-    if (originalUser && currentUser.email !== originalUser.email) {
+    // if (originalUser && currentUser.email !== originalUser.email) {
+    if (req.user.originalUser) {
+      console.log('vraca originalnog usera', req.user.originalUser);
       return this.authService.logOutImpersonateUser(req, res);
     }
+    console.log('ne vraca originalnog usera');
     return this.authService.logOut(req, res);
   }
 
   @Get()
   async authenticate(@Req() req) {
-    return { currentUser: req.user, originalUser: req.session.originalUser };
+    return req.user;
   }
 
   @UseGuards(GoogleGuard)

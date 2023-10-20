@@ -15,7 +15,7 @@ export class ImpersonateStrategy extends PassportStrategy(
       passReqToCallback: true,
     });
   }
-  async validate(req, email): Promise<any> {
+  async validate(req, email, _, done: CallableFunction): Promise<any> {
     console.log('2 - passport lokalna strategija validate');
 
     const provider = req.body.provider;
@@ -25,6 +25,10 @@ export class ImpersonateStrategy extends PassportStrategy(
       throw new UnauthorizedException();
     }
 
-    return user;
+    return done(
+      null,
+      { ...user, originalUser: req.originalUser },
+      { scope: 'read' },
+    );
   }
 }

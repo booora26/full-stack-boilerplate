@@ -9,7 +9,12 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     super({ usernameField: 'email', passReqToCallback: true });
   }
 
-  async validate(req, email: string, password: string): Promise<any> {
+  async validate(
+    req,
+    email: string,
+    password: string,
+    done: CallableFunction,
+  ): Promise<any> {
     console.log('2 - passport lokalna strategija validate');
 
     const provider = req.body.provider;
@@ -19,7 +24,6 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException();
     }
 
-    console.log('user', user);
-    return user;
+    return done(null, user, { scope: 'read' });
   }
 }
