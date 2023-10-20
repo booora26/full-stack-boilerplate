@@ -1,10 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { UserEntity } from '../users/entities/user.entity';
+import { ConfigService } from '@nestjs/config';
+import { authenticator } from 'otplib';
+import { toFileStream } from 'qrcode';
 
 @Injectable()
 export class AuthService {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async register(entity) {
     const { email, password } = entity;
@@ -87,5 +93,35 @@ export class AuthService {
       return console.log('No user');
     }
     return res.redirect('http://localhost:3010');
+  }
+
+  async generateTwoFactorAuthenticationSecret(user: UserEntity) {
+    const secret = authenticator.generateSecret();
+
+    const otpauthUrl = authenticator.keyuri(
+      user.email,
+      this.configService.get('TWO_FACTOR_AUTHENTICATION_APP_NAME'),
+      secret,
+    );
+
+    await this.usersService.setTwoFactorAuthenticationSecret(secret, user.id);
+
+    return {
+      secret,
+      otpauthUrl,
+    };
+  }
+  async pipeQrCodeStream(stream: Response, otpauthUrl: string) {
+    return toFileStream(stream, otpauthUrl);
+  }
+
+  isTwoFactorAuthenticationCodeValid(
+    twoFactorAuthenticationCode: string,
+    user: UserEntity,
+  ) {
+    return authenticator.verify({
+      token: twoFactorAuthenticationCode,
+      secret: user.twoFactorAuthenticationSecret,
+    });
   }
 }

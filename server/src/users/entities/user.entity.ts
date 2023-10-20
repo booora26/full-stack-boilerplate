@@ -13,6 +13,12 @@ export class UserEntity extends CrudEntity {
   @Column({ default: false })
   externalProvider: boolean;
 
+  @Column({ nullable: true })
+  twoFactorAuthenticationSecret?: string;
+
+  @Column({ default: false })
+  isTwoFactorAuthenticationEnabled: boolean;
+
   @BeforeInsert()
   async hashPassword() {
     console.log('create password');

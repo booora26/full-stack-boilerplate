@@ -22,4 +22,16 @@ export class UsersService extends CrudService<UserEntity> {
       throw new Error(err);
     }
   }
+
+  async setTwoFactorAuthenticationSecret(secret: string, userId: number) {
+    return this.repo.update(userId, {
+      twoFactorAuthenticationSecret: secret,
+    });
+  }
+
+  async turnOnTwoFactorAuthentication(userId: number) {
+    return this.repo.update(userId, {
+      isTwoFactorAuthenticationEnabled: true,
+    });
+  }
 }

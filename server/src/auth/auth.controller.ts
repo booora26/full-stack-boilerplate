@@ -8,16 +8,24 @@ import {
   Req,
   Body,
   Session,
+  Res,
+  HttpCode,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guard/local-auth.guard';
 import { Public } from './decotators/public.decorator';
 import { GoogleGuard } from './guard/google.guard';
 import { GitHubGuard } from './guard/github.guard';
+import { AuthenticatedGuard } from './guard/authenticated.guard';
+import { UsersService } from '../users/users.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @UseGuards(LocalAuthGuard)
   @Public()
@@ -75,5 +83,53 @@ export class AuthController {
   @Get('github/callback')
   async githubAuthRedirect(@Request() req, @Response() res) {
     return this.authService.otherLogIn(req, res);
+  }
+
+  @UseGuards(AuthenticatedGuard)
+  @Post('2fa/generate')
+  async register2FA(@Res() response, @Req() request) {
+    const { otpauthUrl } =
+      await this.authService.generateTwoFactorAuthenticationSecret(
+        request.user,
+      );
+
+    return this.authService.pipeQrCodeStream(response, otpauthUrl);
+  }
+
+  @Post('2fa/turn-on')
+  @HttpCode(200)
+  @UseGuards(AuthenticatedGuard)
+  async turnOnTwoFactorAuthentication(
+    @Req() request,
+    @Body() { twoFactorAuthenticationCode },
+  ) {
+    const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
+      twoFactorAuthenticationCode,
+      request.user,
+    );
+    if (!isCodeValid) {
+      throw new UnauthorizedException('Wrong authentication code');
+    }
+    await this.usersService.turnOnTwoFactorAuthentication(request.user.id);
+  }
+
+  @Post('authenticate')
+  @HttpCode(200)
+  @UseGuards(AuthenticatedGuard)
+  async authenticate2FA(
+    @Req() request,
+    @Body() { twoFactorAuthenticationCode },
+  ) {
+    const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
+      twoFactorAuthenticationCode,
+      request.user,
+    );
+    if (!isCodeValid) {
+      throw new UnauthorizedException('Wrong authentication code');
+    }
+
+    request.user.is2FA = true;
+
+    return request.user;
   }
 }
