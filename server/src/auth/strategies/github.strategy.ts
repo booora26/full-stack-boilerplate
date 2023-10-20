@@ -10,10 +10,12 @@ export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
       clientID: '127b1911339a83de08a8',
       clientSecret: '02d7e0c243c64fef24f90aba64b13fa2a6e3f11a',
       callbackURL: 'http://localhost:4010/auth/github/callback',
+      passReqToCallback: true,
     });
   }
 
   async validate(
+    req,
     accessToken: string,
     refreshToken: string,
     profile: any,
@@ -24,7 +26,11 @@ export class GitHubStrategy extends PassportStrategy(Strategy, 'github') {
 
     const email = emails[0].value;
 
-    const user = await this.authService.validateUser(provider, email);
+
+    const user = await this.authService.validateUser(
+      provider,
+      email,
+    );
 
     if (!user) {
       throw new UnauthorizedException();

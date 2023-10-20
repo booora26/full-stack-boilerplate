@@ -13,10 +13,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientSecret: 'kYSCx_5Ucnttg0DuiE_EdMs_',
       callbackURL: 'http://localhost:4010/auth/google/callback',
       scope: ['email', 'profile'],
+      passReqToCallback: true,
     });
   }
 
   async validate(
+    req,
     accessToken: string,
     refreshToken: string,
     profile: any,
@@ -26,7 +28,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
     const { emails, provider } = profile;
     const email = emails[0].value;
-    const user = await this.authService.validateUser(provider, email);
+
+
+    const user = await this.authService.validateUser(
+      provider,
+      email,
+    );
     if (!user) {
       throw new UnauthorizedException();
     }

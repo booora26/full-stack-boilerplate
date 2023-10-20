@@ -10,8 +10,20 @@ export class SessionSerializer extends PassportSerializer {
   }
   async serializeUser(user: any, done?: CallableFunction) {
     console.log('6 - serialize', user);
-    const { id, email, originalUser } = user;
-    done(null, { id, email, originalUser });
+    const {
+      id,
+      email,
+      originalUser,
+      twoFactorAuthenticationSecret,
+      isTwoFactorAuthenticationEnabled,
+    } = user;
+    done(null, {
+      id,
+      email,
+      originalUser,
+      twoFactorAuthenticationSecret,
+      isTwoFactorAuthenticationEnabled,
+    });
   }
   async deserializeUser(user: UserEntity, done: CallableFunction) {
     console.log('deserialize', user);

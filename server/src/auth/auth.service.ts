@@ -33,6 +33,7 @@ export class AuthService {
     console.log('3 - auth service ValidateUser');
 
     const user = await this.usersService.findByEmail(email);
+
     console.log(provider);
     if (provider === 'impersonate' && user) {
       console.log('impersonate auth');
@@ -115,10 +116,17 @@ export class AuthService {
     return toFileStream(stream, otpauthUrl);
   }
 
+  async turnOnTwoFactorAuthentication(userId: number) {
+    return this.usersService.update(userId, {
+      isTwoFactorAuthenticationEnabled: true,
+    });
+  }
+
   isTwoFactorAuthenticationCodeValid(
     twoFactorAuthenticationCode: string,
     user: UserEntity,
   ) {
+    console.log('code 2', user.twoFactorAuthenticationSecret);
     return authenticator.verify({
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthenticationSecret,

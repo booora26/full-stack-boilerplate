@@ -18,6 +18,7 @@ import { Provider } from '../auth/decotators/provider.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { ImpersonateGuard } from '../auth/guard/impersonate.guard';
 import { session } from 'passport';
+import { TwoFAGuard } from '../auth/guard/twoFA.guard';
 
 @Controller('users')
 export class UsersController extends CrudController<UserEntity> {
@@ -41,5 +42,11 @@ export class UsersController extends CrudController<UserEntity> {
     // session.passport.user = user;
     // await (session.originalUser = req.originalUser);
     res.redirect('http://localhost:3010');
+  }
+
+  @UseGuards(TwoFAGuard)
+  @Get('test2fa')
+  async test2FA() {
+    return '2fa is working';
   }
 }

@@ -32,7 +32,13 @@ export class AuthController {
   @Post('login')
   async login(@Request() req) {
     console.log('8 - local login controler');
+    if (req.user.isTwoFactorAuthenticationEnabled) {
+      return;
+    }
+
+    return req.user;
   }
+
   @Public()
   @Post('register')
   async register(@Body() entity: any) {
@@ -101,7 +107,7 @@ export class AuthController {
   @UseGuards(AuthenticatedGuard)
   async turnOnTwoFactorAuthentication(
     @Req() request,
-    @Body() { twoFactorAuthenticationCode },
+    @Body('twoFactorAuthenticationCode') twoFactorAuthenticationCode,
   ) {
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
       twoFactorAuthenticationCode,
@@ -113,13 +119,14 @@ export class AuthController {
     await this.usersService.turnOnTwoFactorAuthentication(request.user.id);
   }
 
-  @Post('authenticate')
+  @Post('2fa/authenticate')
   @HttpCode(200)
   @UseGuards(AuthenticatedGuard)
   async authenticate2FA(
     @Req() request,
-    @Body() { twoFactorAuthenticationCode },
+    @Body('twoFactorAuthenticationCode') twoFactorAuthenticationCode,
   ) {
+    console.log('CODE', request.user);
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
       twoFactorAuthenticationCode,
       request.user,
@@ -129,6 +136,8 @@ export class AuthController {
     }
 
     request.user.is2FA = true;
+
+    console.log(request.user);
 
     return request.user;
   }
