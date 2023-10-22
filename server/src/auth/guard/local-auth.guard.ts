@@ -25,7 +25,6 @@ export class LocalAuthGuard extends AuthGuard('local') {
 
     await super.logIn(request);
     console.log('7 - LocalAuthGuard posle logIn');
-    console.log('info', request);
 
     // if no exceptions were thrown, allow the access to the route
     return true;

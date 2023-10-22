@@ -19,6 +19,7 @@ import { GoogleGuard } from './guard/google.guard';
 import { GitHubGuard } from './guard/github.guard';
 import { AuthenticatedGuard } from './guard/authenticated.guard';
 import { UsersService } from '../users/users.service';
+import { TwoFAGuard } from './guard/twoFA.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -33,16 +34,20 @@ export class AuthController {
   async login(@Request() req) {
     console.log('8 - local login controler');
     if (req.user.isTwoFactorAuthenticationEnabled) {
-      return;
+      return '2fa step';
     }
 
-    return req.user;
+    return 'loged in';
   }
 
   @Public()
   @Post('register')
   async register(@Body() entity: any) {
-    return this.authService.register(entity);
+    try {
+      return this.authService.register(entity);
+    } catch {
+      throw new Error('user exists');
+    }
   }
 
   @Get('logout')
@@ -91,7 +96,6 @@ export class AuthController {
     return this.authService.otherLogIn(req, res);
   }
 
-  @UseGuards(AuthenticatedGuard)
   @Post('2fa/generate')
   async register2FA(@Res() response, @Req() request) {
     const { otpauthUrl } =
@@ -102,42 +106,45 @@ export class AuthController {
     return this.authService.pipeQrCodeStream(response, otpauthUrl);
   }
 
+
   @Post('2fa/turn-on')
   @HttpCode(200)
-  @UseGuards(AuthenticatedGuard)
   async turnOnTwoFactorAuthentication(
     @Req() request,
+    @Res() response,
     @Body('twoFactorAuthenticationCode') twoFactorAuthenticationCode,
   ) {
-    const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
-      twoFactorAuthenticationCode,
-      request.user,
-    );
+    const user = await this.usersService.findOne(request.user.id);
+    const isCodeValid =
+      await this.authService.isTwoFactorAuthenticationCodeValid(
+        twoFactorAuthenticationCode,
+        user,
+      );
     if (!isCodeValid) {
       throw new UnauthorizedException('Wrong authentication code');
     }
-    await this.usersService.turnOnTwoFactorAuthentication(request.user.id);
+    const updatedUser = await this.usersService.turnOnTwoFactorAuthentication(
+      request.user.id,
+    );
+
+    if (updatedUser.affected > 0)
+      return this.authService.logOut(request, response);
   }
 
+  @UseGuards(TwoFAGuard)
+  @Public()
   @Post('2fa/authenticate')
   @HttpCode(200)
-  @UseGuards(AuthenticatedGuard)
-  async authenticate2FA(
-    @Req() request,
-    @Body('twoFactorAuthenticationCode') twoFactorAuthenticationCode,
-  ) {
-    console.log('CODE', request.user);
-    const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
-      twoFactorAuthenticationCode,
-      request.user,
-    );
-    if (!isCodeValid) {
-      throw new UnauthorizedException('Wrong authentication code');
-    }
+  async authenticate2FA(@Req() request) {
+    // const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
+    //   twoFactorAuthenticationCode,
+    //   request.user,
+    // );
+    // if (!isCodeValid) {
+    //   throw new UnauthorizedException('Wrong authentication code');
+    // }
 
-    request.user.is2FA = true;
-
-    console.log(request.user);
+    // request.user.is2FA = true;
 
     return request.user;
   }

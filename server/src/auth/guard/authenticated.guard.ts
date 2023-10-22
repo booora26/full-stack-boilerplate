@@ -19,6 +19,22 @@ export class AuthenticatedGuard implements CanActivate {
     }
     const request = context.switchToHttp().getRequest();
     console.log('auth guard');
-    return request.isAuthenticated();
+
+    const { isTwoFactorAuthenticationEnabled, isTwoFactorAuthenticated } =
+      request.user;
+    if (
+      request.isAuthenticated() &&
+      isTwoFactorAuthenticationEnabled === false
+    ) {
+      console.log('auth bez 2fa');
+      return true;
+    }
+    if (
+      request.isAuthenticated() &&
+      isTwoFactorAuthenticationEnabled === true
+    ) {
+      console.log('auth uspesno sa  2fa', isTwoFactorAuthenticated);
+      return isTwoFactorAuthenticated;
+    }
   }
 }

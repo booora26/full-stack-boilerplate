@@ -20,10 +20,7 @@ export class ImpersonateStrategy extends PassportStrategy(
 
     const provider = req.body.provider;
 
-    const user = await this.authService.validateUser(
-      provider,
-      email,
-    );
+    const user = await this.authService.validateUser(provider, email);
     if (!user) {
       throw new UnauthorizedException();
     }

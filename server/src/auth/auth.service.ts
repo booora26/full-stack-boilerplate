@@ -22,6 +22,10 @@ export class AuthService {
       });
     }
 
+    if (user) {
+      throw new Error('user alrady exists');
+    }
+
     return this.usersService.create(entity);
   }
 
@@ -39,7 +43,7 @@ export class AuthService {
       console.log('impersonate auth');
 
       const { password, salt, ...result } = user;
-      return result;
+      return { ...result, isTwoFactorAuthenticated: true };
     }
     if (
       provider === 'local' &&
@@ -48,7 +52,7 @@ export class AuthService {
       (await user.validatePassword(password))
     ) {
       console.log('lokalna auth');
-      const { salt, ...result } = user;
+      const { password, salt, ...result } = user;
       return result;
     }
     if (provider !== 'local' && user) {
@@ -122,11 +126,16 @@ export class AuthService {
     });
   }
 
-  isTwoFactorAuthenticationCodeValid(
+  async isTwoFactorAuthenticationCodeValid(
     twoFactorAuthenticationCode: string,
     user: UserEntity,
   ) {
-    console.log('code 2', user.twoFactorAuthenticationSecret);
+    console.log(
+      'code 2',
+      twoFactorAuthenticationCode,
+      user.twoFactorAuthenticationSecret,
+    );
+
     return authenticator.verify({
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthenticationSecret,

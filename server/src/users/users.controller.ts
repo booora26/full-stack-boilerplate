@@ -8,6 +8,7 @@ import {
   Request,
   UseGuards,
   Post,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CrudController } from '../crud/crud.controller';
@@ -44,9 +45,9 @@ export class UsersController extends CrudController<UserEntity> {
     res.redirect('http://localhost:3010');
   }
 
-  @UseGuards(TwoFAGuard)
   @Get('test2fa')
-  async test2FA() {
+  async test2FA(@Req() req) {
+    console.log('user req', req);
     return '2fa is working';
   }
 }

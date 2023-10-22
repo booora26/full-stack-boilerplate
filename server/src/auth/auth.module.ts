@@ -11,6 +11,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
 import { ConfigModule } from '@nestjs/config';
 import { GitHubStrategy } from './strategies/github.strategy';
 import { ImpersonateStrategy } from './strategies/impersonate.strategy';
+import { TwoFAStrategy } from './strategies/twoFA.strategy';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ImpersonateStrategy } from './strategies/impersonate.strategy';
     GoogleStrategy,
     GitHubStrategy,
     ImpersonateStrategy,
+    TwoFAStrategy,
     { provide: APP_GUARD, useClass: AuthenticatedGuard }, // omogucavan da Guard postane globalni
   ],
   exports: [AuthService],
