@@ -17,7 +17,6 @@ import { LocalAuthGuard } from './guard/local-auth.guard';
 import { Public } from './decotators/public.decorator';
 import { GoogleGuard } from './guard/google.guard';
 import { GitHubGuard } from './guard/github.guard';
-import { AuthenticatedGuard } from './guard/authenticated.guard';
 import { UsersService } from '../users/users.service';
 import { TwoFAGuard } from './guard/twoFA.guard';
 
@@ -31,13 +30,16 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Public()
   @Post('login')
-  async login(@Request() req) {
+  async login(@Req() req) {
     console.log('8 - local login controler');
     if (req.user.isTwoFactorAuthenticationEnabled) {
-      return '2fa step';
+      return true;
+    }
+    if (!req.user) {
+      throw new Error('Authentication error');
     }
 
-    return 'loged in';
+    return true;
   }
 
   @Public()
@@ -66,6 +68,9 @@ export class AuthController {
 
   @Get()
   async authenticate(@Req() req) {
+    if (!req.user) {
+      throw new Error(' No authenticated user');
+    }
     return req.user;
   }
 
@@ -105,7 +110,6 @@ export class AuthController {
 
     return this.authService.pipeQrCodeStream(response, otpauthUrl);
   }
-
 
   @Post('2fa/turn-on')
   @HttpCode(200)

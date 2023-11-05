@@ -1,10 +1,55 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { ConfigProvider } from "antd";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import DashboardPage from "./pages/DashboardPage";
+import { LogInPage } from "./pages/auth/LogInPage";
+import { RegistrationPage } from "./pages/auth/RegistrationPage";
+import { TwoFAPage } from "./pages/auth/TwoFAPage";
+import {
+  MainContext,
+  UserContext,
+  unAuthenticatedUser,
+} from "./context/AuthContext.tsx";
+import { AuthenticatedPage } from "./pages/auth/AuthenticatedPage.tsx";
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+const router = createBrowserRouter([
+  {
+    path: "/login",
+    element: <LogInPage />,
+  },
+  {
+    path: "/registration",
+    element: <RegistrationPage />,
+  },
+  {
+    path: "/2fa",
+    element: <TwoFAPage />,
+  },
+  {
+    element: <AuthenticatedPage />,
+    children: [
+      {
+        path: "/",
+        element: <DashboardPage />,
+      },
+    ],
+  },
+]);
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: "#e9c46a",
+          borderRadius: 0,
+        },
+      }}
+    >
+      <UserContext>
+        <RouterProvider router={router} />
+      </UserContext>
+    </ConfigProvider>
+  </React.StrictMode>
+);

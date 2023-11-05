@@ -24,6 +24,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException();
     }
 
+    console.log('lokalna stretegija user', user);
     return done(null, user, { scope: 'read' });
   }
 }

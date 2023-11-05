@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { CrudEntity } from './crud.entity';
 import { CrudService } from './crud.service';
+import { Public } from '../auth/decotators/public.decorator';
 
 @Controller()
 export class CrudController<T extends CrudEntity> {
@@ -28,6 +29,7 @@ export class CrudController<T extends CrudEntity> {
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
+  @Public()
   @Get()
   // @UseGuards(DinamicPermissionGuard)
   async findAll(
@@ -57,6 +59,7 @@ export class CrudController<T extends CrudEntity> {
   }
 
   @Get(':id')
+  @Public()
   async findOne(@Param('id') id: string) {
     try {
       return await this.service.findOne(+id);

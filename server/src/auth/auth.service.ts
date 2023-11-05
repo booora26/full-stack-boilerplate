@@ -43,7 +43,7 @@ export class AuthService {
       console.log('impersonate auth');
 
       const { password, salt, ...result } = user;
-      return { ...result, isTwoFactorAuthenticated: true };
+      return { ...result, isTwoFactorAuthenticated: true, provider };
     }
     if (
       provider === 'local' &&
@@ -53,13 +53,13 @@ export class AuthService {
     ) {
       console.log('lokalna auth');
       const { password, salt, ...result } = user;
-      return result;
+      return { ...result, provider };
     }
     if (provider !== 'local' && user) {
       console.log(`${provider} auth`);
 
       const { password, salt, ...result } = user;
-      return result;
+      return { ...result, provider };
     }
 
     if (provider !== 'local') {
@@ -68,7 +68,8 @@ export class AuthService {
       const newUser = new UserEntity();
       newUser.email = email;
       newUser.externalProvider = true;
-      return await this.usersService.create(newUser);
+      const result = await this.usersService.create(newUser);
+      return { ...result, provider };
     }
 
     console.log('no auth');
@@ -82,7 +83,7 @@ export class AuthService {
         return err;
       }
       // req.session.destroy;
-      res.redirect('http://localhost:3010');
+      res.redirect('http://localhost:3010/login');
     });
     // req.session.cookie.maxAge = 0;
     req.session.destroy;
@@ -90,12 +91,15 @@ export class AuthService {
 
   async logOutImpersonateUser(req, res) {
     req.session.passport.user = req.user.originalUser;
-    res.redirect('http://localhost:3010');
+    res.redirect('http://localhost:3010/login');
   }
 
   async otherLogIn(req, res) {
     if (!req.user) {
       return console.log('No user');
+    }
+    if (req.user.isTwoFactorAuthenticationEnabled) {
+      return res.redirect('http://localhost:3010/2fa');
     }
     return res.redirect('http://localhost:3010');
   }
