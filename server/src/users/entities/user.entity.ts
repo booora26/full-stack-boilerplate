@@ -19,6 +19,9 @@ export class UserEntity extends CrudEntity {
   @Column({ default: false })
   isTwoFactorAuthenticationEnabled: boolean;
 
+  @Column({ nullable: true, type: 'simple-array' })
+  permissions?: string[];
+
   @BeforeInsert()
   async hashPassword() {
     console.log('create password');

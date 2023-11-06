@@ -18,6 +18,7 @@ export class SessionSerializer extends PassportSerializer {
       isTwoFactorAuthenticationEnabled,
       isTwoFactorAuthenticated,
       provider,
+      permissions,
     } = user;
     console.log('6b - after serialize', user);
     done(null, {
@@ -29,6 +30,7 @@ export class SessionSerializer extends PassportSerializer {
       isTwoFactorAuthenticated,
       // isAuthenticated: true,
       provider,
+      permissions,
     });
   }
   async deserializeUser(user: UserEntity, done: CallableFunction) {

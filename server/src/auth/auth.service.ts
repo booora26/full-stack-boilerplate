@@ -38,7 +38,7 @@ export class AuthService {
 
     const user = await this.usersService.findByEmail(email);
 
-    console.log(provider);
+    console.log(provider, user);
     if (provider === 'impersonate' && user) {
       console.log('impersonate auth');
 
@@ -144,5 +144,26 @@ export class AuthService {
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthenticationSecret,
     });
+  }
+
+  async resetPassword(
+    email: string,
+    password: string,
+    newPassword1: string,
+    newPassword2: string,
+  ) {
+    const user = await this.usersService.findByEmail(email);
+
+    let updatedUser: UserEntity;
+    if (
+      (await user.validatePassword(password)) &&
+      newPassword1 === newPassword2
+    ) {
+      updatedUser = await this.usersService.update(user.id, {
+        password: newPassword1,
+      });
+      return 'Password successfully changed';
+    }
+    throw new Error('There is problem with reseting password');
   }
 }

@@ -4,6 +4,8 @@ import { useContext } from "react";
 // import { logOut } from "../api/auth";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { Spending } from "../components/Spending";
+import { BP } from "../components/BP";
 
 export default function DashboardPage() {
 
@@ -31,7 +33,12 @@ export default function DashboardPage() {
 
         </Link>
 
+        {user.permissions && user.permissions.includes('spending') ? <Spending /> : ''}
+        {user.permissions && user.permissions.includes('bp') ? <BP /> : ''}
+
       </Space>
+
+
   
     </>
   );
