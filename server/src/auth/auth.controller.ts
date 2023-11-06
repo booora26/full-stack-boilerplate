@@ -71,7 +71,10 @@ export class AuthController {
     if (!req.user) {
       throw new Error(' No authenticated user');
     }
-    return req.user;
+
+    const { twoFactorAuthenticationSecret, isTwoFactorAuthenticated, ...user } =
+      req.user;
+    return user;
   }
 
   @UseGuards(GoogleGuard)

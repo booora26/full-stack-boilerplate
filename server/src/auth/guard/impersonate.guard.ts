@@ -18,9 +18,13 @@ export class ImpersonateGuard extends AuthGuard('impersonate') {
 
     const request = await context.switchToHttp().getRequest();
 
-    const originalUser = request.session.passport.user;
+    console.log('original user', request.session.passport.user);
 
-    request.originalUser = originalUser;
+    request.session.passport.user.originalUser
+      ? (request.originalUser = request.session.passport.user.originalUser)
+      : (request.originalUser = request.session.passport.user);
+
+    // request.originalUser = originalUser;
 
     const id = request.params.id;
     const user = await this.userService.findOne(id);
@@ -33,15 +37,15 @@ export class ImpersonateGuard extends AuthGuard('impersonate') {
 
     await super.canActivate(context);
 
-    console.log('4 - LocalAuthGuard posle canActivate');
+    console.log('4 - ImpersonateGuard posle canActivate');
 
     // initialize the session
-    console.log('5 - LocalAuthGuard pre logIn');
+    console.log('5 - ImpersonateGuard pre logIn');
     // const request = await context.switchToHttp().getRequest();
 
     await super.logIn(request);
 
-    console.log('7 - LocalAuthGuard posle logIn');
+    console.log('7 -ImpersonateGuard  posle logIn');
     console.log('info', request);
 
     // if no exceptions were thrown, allow the access to the route

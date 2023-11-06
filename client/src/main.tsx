@@ -12,6 +12,7 @@ import {
   unAuthenticatedUser,
 } from "./context/AuthContext.tsx";
 import { AuthenticatedPage } from "./pages/auth/AuthenticatedPage.tsx";
+import { UsersPage, loader as usersLoader } from "./pages/UsersPage.tsx";
 
 const router = createBrowserRouter([
   {
@@ -32,6 +33,11 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <DashboardPage />,
+      },
+      {
+        path: "/users",
+        element: <UsersPage />,
+        loader: usersLoader
       },
     ],
   },

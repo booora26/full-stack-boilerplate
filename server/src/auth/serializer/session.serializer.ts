@@ -27,7 +27,7 @@ export class SessionSerializer extends PassportSerializer {
       twoFactorAuthenticationSecret,
       isTwoFactorAuthenticationEnabled,
       isTwoFactorAuthenticated,
-      isAuthenticated: true,
+      // isAuthenticated: true,
       provider,
     });
   }

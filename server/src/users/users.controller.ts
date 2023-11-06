@@ -42,6 +42,7 @@ export class UsersController extends CrudController<UserEntity> {
     // session.originalUser = session.passport.user;
     // session.passport.user = user;
     // await (session.originalUser = req.originalUser);
+
     res.redirect('http://localhost:3010');
   }
 

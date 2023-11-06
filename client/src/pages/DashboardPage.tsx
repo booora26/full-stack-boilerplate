@@ -9,9 +9,9 @@ export default function DashboardPage() {
 
   const [user] = useContext(AuthContext)
 
-  const exit = async () => {
-    const res = await logOut()
-  }
+  // const exit = async () => {
+  //   const res = await logOut()
+  // }
 
   return (
     <>
@@ -23,7 +23,8 @@ export default function DashboardPage() {
           {user.provider === 'impersonate' ? <p>Original user: {user.originalUser.email}</p> : ''}
         </Space>
 
-        <a href="http://localhost:4010/users/16/impersonate">Impersonate</a>
+        <Link to={'http://localhost:3010/users'}>Users</Link>
+
         <br />
         <Link to={'http://localhost:4010/auth/logout'}>
         <Button>Log Out</Button>

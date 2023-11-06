@@ -25,10 +25,10 @@ export class ImpersonateStrategy extends PassportStrategy(
       throw new UnauthorizedException();
     }
 
-    return done(
-      null,
-      { ...user, originalUser: req.originalUser },
-      { scope: 'read' },
-    );
+    const { twoFactorAuthenticationSecret, ...rest } = user;
+    const { twoFactorAuthenticationSecret: originalUser2FAS, ...originalUser } =
+      req.originalUser;
+
+    return done(null, { ...rest, originalUser }, { scope: 'read' });
   }
 }

@@ -12,7 +12,7 @@ export const AuthenticatedPage = () => {
     if (!user.id) {
       const fetchCurrentUser = async () => {
         const response = await getCurrentUser();
-        response.statusCode !== "403" ? setUser(response) : navigate("/login");
+        response.statusCode !== 403 ? setUser(response) : navigate("/login");
 
         return user
       };
