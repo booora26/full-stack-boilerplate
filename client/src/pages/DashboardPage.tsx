@@ -39,23 +39,23 @@ export default function DashboardPage() {
 
       <Flex gap="middle" wrap="wrap" vertical>
       <Flex gap="middle" wrap="wrap" >
-        {user.permissions && user.permissions.includes("campaign") ? (
+        {user.permissions && user.permissions.includes("campaign-list") ? (
           <Campaign />
         ) : (
           ""
         )}
-        {user.permissions && user.permissions.includes("bp") ? <BP /> : ""}
-        {user.permissions && user.permissions.includes("spending") ? (
+        {user.permissions && user.permissions.includes("view-business-plan") ? <BP /> : ""}
+        {user.permissions && user.permissions.includes("view-spending") ? (
           <Spending />
         ) : (
           ""
         )}
       </Flex>
       <Flex gap="middle" wrap="wrap" >
-        {user.permissions && user.permissions.includes("bp") ? <BP /> : ""}
-        {user.permissions && user.permissions.includes("bp") ? <BP /> : ""}
-        {user.permissions && user.permissions.includes("bp") ? <BP /> : ""}
-        {user.permissions && user.permissions.includes("bp") ? <BP /> : ""}
+        {user.permissions && user.permissions.includes("view-business-plan") ? <BP /> : ""}
+        {user.permissions && user.permissions.includes("view-business-plan") ? <BP /> : ""}
+        {user.permissions && user.permissions.includes("view-business-plan") ? <BP /> : ""}
+        {user.permissions && user.permissions.includes("view-business-plan") ? <BP /> : ""}
       </Flex>
 
 

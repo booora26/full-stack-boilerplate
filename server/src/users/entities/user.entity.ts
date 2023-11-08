@@ -1,6 +1,13 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  ManyToMany,
+} from 'typeorm';
 import * as crypto from 'crypto';
 import { CrudEntity } from '../../crud/crud.entity';
+import { RoleEntity } from '../../authz/roles/role.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends CrudEntity {
@@ -19,8 +26,8 @@ export class UserEntity extends CrudEntity {
   @Column({ default: false })
   isTwoFactorAuthenticationEnabled: boolean;
 
-  @Column({ nullable: true, type: 'simple-array' })
-  permissions?: string[];
+  @ManyToMany(() => RoleEntity, (role) => role.users, { eager: true })
+  roles?: RoleEntity[];
 
   @BeforeInsert()
   async hashPassword() {

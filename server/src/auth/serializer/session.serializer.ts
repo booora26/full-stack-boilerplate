@@ -18,8 +18,24 @@ export class SessionSerializer extends PassportSerializer {
       isTwoFactorAuthenticationEnabled,
       isTwoFactorAuthenticated,
       provider,
-      permissions,
+      roles,
     } = user;
+
+    let { permissions } = user;
+
+    permissions ? '' : (permissions = []);
+
+    console.log('perm', permissions);
+
+    roles
+      ? roles.map((r) => r.permissions.map((p) => permissions.push(p.slug)))
+      : '';
+
+    const onlyUnique = (value, index, array) => {
+      return array.indexOf(value) === index;
+    };
+
+    permissions = permissions.filter(onlyUnique);
     console.log('6b - after serialize', user);
     done(null, {
       id,
