@@ -4,6 +4,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { AuthzModule } from './authz/authz.module';
+import { RouterModule } from '@nestjs/core';
+import { AUTHZ_ROUTES } from './authz/authz-routes';
+
+const ROUTES = [...AUTHZ_ROUTES];
 
 @Module({
   imports: [
@@ -12,6 +17,7 @@ import { AuthModule } from './auth/auth.module';
       isGlobal: true,
       cache: true,
     }),
+    RouterModule.register(ROUTES),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -31,6 +37,7 @@ import { AuthModule } from './auth/auth.module';
     EventEmitterModule.forRoot(),
     UsersModule,
     AuthModule,
+    AuthzModule,
   ],
   controllers: [],
   providers: [],
