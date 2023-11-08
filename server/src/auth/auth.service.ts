@@ -147,11 +147,14 @@ export class AuthService {
   }
 
   async resetPassword(
-    email: string,
     password: string,
     newPassword1: string,
     newPassword2: string,
+    req,
+    // res,
   ) {
+    const { email } = req.user;
+    console.log('be reset pass', email, password, newPassword1, newPassword2);
     const user = await this.usersService.findByEmail(email);
 
     let updatedUser: UserEntity;
@@ -162,7 +165,7 @@ export class AuthService {
       updatedUser = await this.usersService.update(user.id, {
         password: newPassword1,
       });
-      return 'Password successfully changed';
+      return updatedUser;
     }
     throw new Error('There is problem with reseting password');
   }

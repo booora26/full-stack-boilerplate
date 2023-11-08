@@ -19,6 +19,25 @@ export const logIn = async (value) => {
 
   return status;
 };
+export const resetPassword = async (value) => {
+  const { password, newPassword1, newPassword2 } = value;
+
+  const myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+
+  const response = await fetch(`${url}/reset-password`, {
+    method: "POST",
+    headers: myHeaders,
+    credentials: "include",
+    body: JSON.stringify({ password, newPassword1, newPassword2 }),
+  });
+
+  const status = await response.json();
+
+  // if (status.statusCode === 401) return;
+
+  return status;
+};
 export const getCurrentUser = async () => {
 
   const response = await fetch(`${url}`, {credentials: 'include'});

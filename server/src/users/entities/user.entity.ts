@@ -36,7 +36,7 @@ export class UserEntity extends CrudEntity {
   @BeforeUpdate()
   async updateHashPassword() {
     console.log('update password');
-    this.salt = crypto.randomBytes(16).toString('hex');
+    // this.salt = crypto.randomBytes(16).toString('hex');
     const hashedPassword = crypto
       .pbkdf2Sync(this.password, this.salt, 1000, 64, `sha512`)
       .toString(`hex`);
