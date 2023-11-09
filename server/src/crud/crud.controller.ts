@@ -70,6 +70,7 @@ export class CrudController<T extends CrudEntity> {
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateBaseDto: T) {
+    console.log('patch', id, updateBaseDto);
     try {
       return await this.service.update(+id, updateBaseDto);
     } catch (err) {
