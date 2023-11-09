@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { AuthzModule } from './authz/authz.module';
 import { RouterModule } from '@nestjs/core';
 import { AUTHZ_ROUTES } from './authz/authz-routes';
+import { SeedModule } from './seed/seed.module';
 
 const ROUTES = [...AUTHZ_ROUTES];
 
@@ -38,6 +39,7 @@ const ROUTES = [...AUTHZ_ROUTES];
     UsersModule,
     AuthModule,
     AuthzModule,
+    SeedModule,
   ],
   controllers: [],
   providers: [],

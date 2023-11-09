@@ -17,6 +17,8 @@ export class UserEntity extends CrudEntity {
   password?: string;
   @Column({ nullable: true })
   salt?: string;
+  @Column({ nullable: true })
+  image?: string;
   @Column({ default: false })
   externalProvider: boolean;
 
