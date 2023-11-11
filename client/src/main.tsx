@@ -33,10 +33,10 @@ const router = createBrowserRouter([
     element: <TwoFAPage />,
   },
   {
-  element: <RootLayout />,
+  element: <AuthenticatedPage />,
   children: 
   [{
-    element: <AuthenticatedPage />,
+    element: <RootLayout />,
     children: [
       {
         path: "/",

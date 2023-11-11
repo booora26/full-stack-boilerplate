@@ -1,6 +1,7 @@
-import { Flex, Row, Space, Typography, theme } from 'antd'
+// import { Flex, Row, Space, Typography, theme } from 'antd'
 import React from 'react'
-import { CampaignListItem } from './campaign/campaignListItem'
+import { List } from './List'
+import { CampaignListItem } from './campaign/CampaignListItem'
 
 
 const campaigns = [
@@ -18,26 +19,34 @@ const campaigns = [
  
 ]
 
-export const Campaign = () => {
-    const {
-        token: { colorBgContainer },
-      } = theme.useToken();
-  return (
-    <>
-    <div className='campaign-list-item' style={{height: '650px', minWidth: '460px'}}>
-    <Flex vertical>
-    <Typography.Title level={4}>Campaign list</Typography.Title>
-  <div style={{height: '550px', minWidth: '450px', overflowY: 'scroll'}}>
-  <Flex vertical>
-  {campaigns.map((c, i) => <CampaignListItem name={c.name} period={c.period} actual={c.actualBDG} plan={c.plannedBDG} status={c.status} key={i}/>)}
+// export const Campaign = () => {
+//     const {
+//         token: { colorBgContainer },
+//       } = theme.useToken();
+//   return (
+//     <>
+//     <div className='campaign-list-item' style={{height: '650px', minWidth: '460px'}}>
+//     <Flex vertical>
+//     <Typography.Title level={4}>Campaign list</Typography.Title>
+//   <div style={{height: '550px', minWidth: '450px', overflowY: 'scroll'}}>
+//   <Flex vertical>
+//   {campaigns.map((c, i) => <CampaignListItem name={c.name} period={c.period} actual={c.actualBDG} plan={c.plannedBDG} status={c.status} key={i}/>)}
 
-  </Flex>
+//   </Flex>
 
-  </div>
+//   </div>
        
       
-    </Flex>
-</div>
-</>
-  )
+//     </Flex>
+// </div>
+// </>
+//   )
+// }
+export const Campaign = () => {
+
+const campaignsList = campaigns.map((c, i) => <CampaignListItem name={c.name} period={c.period} actual={c.actualBDG} plan={c.plannedBDG} status={c.status} key={i}/>)
+
+console.log('campaign component')
+  const name = 'Campaign';
+   return <List listName={name} list={campaignsList}/>
 }

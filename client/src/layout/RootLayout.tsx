@@ -1,66 +1,144 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from "react";
 import {
-  AppstoreOutlined,
-  BarChartOutlined,
-  CloudOutlined,
-  ShopOutlined,
-  TeamOutlined,
-  UploadOutlined,
-  UserOutlined,
-  VideoCameraOutlined,
-} from '@ant-design/icons';
-import type { MenuProps } from 'antd';
-import { Layout, Menu, theme } from 'antd';
-import { Outlet } from 'react-router-dom';
 
-const { Header, Content, Footer, Sider } = Layout;
+  HomeOutlined,
+  IdcardOutlined,
 
-const items: MenuProps['items'] = [
-  UserOutlined,
-  VideoCameraOutlined,
-  UploadOutlined,
-  BarChartOutlined,
-  CloudOutlined,
-  AppstoreOutlined,
-  TeamOutlined,
-  ShopOutlined,
-].map((icon, index) => ({
-  key: String(index + 1),
-  icon: React.createElement(icon),
-  label: `nav ${index + 1}`,
-}));
+} from "@ant-design/icons";
+import type { MenuProps } from "antd";
+import { Layout, Menu, theme } from "antd";
+import { Link, Outlet } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
-export const RootLayout= () => {
-    const [collapsed, setCollapsed] = useState(true);
+const { Content, Sider } = Layout;
 
+
+
+
+
+const items = [
+  {
+    key: '2',
+    icon: <HomeOutlined />,
+    label: <Link to={"http://localhost:3010/"}>Home</Link>,
+  },
+  {
+    key: 1,
+    icon: <IdcardOutlined />,
+    permission: 'view-admin',
+    children: [
+      {
+        type: "group", // Must have
+        label: "Organization",
+        children: [
+          {
+            key: "1-1",
+            // icon: <UserOutlined />,
+            label: <Link to={"http://localhost:3010/users"}>Users</Link>,
+          },
+        ],
+      },
+      {
+        type: "group", // Must have
+        label: "Authorization",
+        children: [
+          {
+            key: "2-1",
+            label: "Permissions",
+
+          },
+          {
+            key: "2-2",
+            label: "Roles",
+          },
+          {
+            key: "2-1",
+            label: "Groups",
+            permission: 'view-authorization',
+
+          },
+        ],
+      },
+    ],
+    label: "Admin",
+  },
+];
+
+
+export const RootLayout = () => {
+  const [collapsed, setCollapsed] = useState(true);
+  const [user] = useContext(AuthContext);
+
+  
+
+  console.log('user', user)
+
+  function filterListByPermissions(list, allowedPermissions) {
+    // console.log('a perm', allowedPermissions)
+    return list.filter(item => {
+      console.log('item', item)
+      // Ako trenutni element nema permission ili je dozvoljen
+      if (!item.permission || allowedPermissions.includes(item.permission)) {
+        console.log('perm', item.permission, 'allowed', allowedPermissions)
+        // Ako postoje djeca (children), rekurzivno filtriraj i djecu
+        if (item.children && item.children.length > 0) {
+          item.children = filterListByPermissions(item.children, allowedPermissions);
+        }
+        return true;
+      } else {
+      
+        return false;
+      }
+    });
+  }
+  const filteredItems = filterListByPermissions(items, user.permissions);
+  console.log('filtred', filteredItems)
+  // const filteredItems = items.map(elem => {if (elem.children) return  recurseOnSubMenues(elem)})
+  // const filteredItems = items.filter((i) => (!i.permission || (user.permissions && user.permissions.includes(i.permission))))
+  // const filteredItemsSecondLevel = filteredItems.filter((i) => (!i.permission || (user.permissions && user.permissions.includes(i.permission))))
 
   return (
     <Layout hasSider>
       <Sider
-      collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}
-      theme='light'
+        collapsible
+        collapsed={collapsed}
+        onCollapse={(value) => setCollapsed(value)}
+        theme="light"
         style={{
-          overflow: 'auto',
-          height: '100vh',
-          position: 'fixed',
+          overflow: "auto",
+          height: "100vh",
+          position: "fixed",
           left: 0,
           top: 0,
           bottom: 0,
-          zIndex: 100
+          zIndex: 100,
         }}
       >
         <div className="demo-logo-vertical" />
-        <Menu theme="light" mode="inline" defaultSelectedKeys={['4']} items={items} />
+        <Menu
+          theme="light"
+          mode="inline"
+          defaultSelectedKeys={["4"]}
+          items={filteredItems}
+        />
       </Sider>
-      <Layout className="site-layout" style={{ marginLeft: 100, display: 'flex'}}>
-        <Content style={{ margin: '24px 16px 0', overflow: 'initial' }}>
+      <Layout
+        className="site-layout"
+        style={{ marginLeft: 100, display: "flex" }}
+      >
+        <Content
+          style={{
+            margin: "24px 16px 0",
+            overflow: "initial",
+            minHeight: "100vh",
+          }}
+        >
           <div>
             <Outlet />
           </div>
         </Content>
-        <Footer style={{ textAlign: 'center' }}>Ant Design ©2023 Created by Ant UED</Footer>
+        {/* <Footer style={{ textAlign: 'center' }}>Ant Design ©2023 Created by Ant UED</Footer> */}
       </Layout>
     </Layout>
   );
 };
-
