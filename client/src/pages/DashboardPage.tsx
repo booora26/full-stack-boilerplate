@@ -15,6 +15,13 @@ export default function DashboardPage() {
   //   const res = await logOut()
   // }
 
+  const campaignPermission =
+    user.permissions && user.permissions.includes("campaign-list");
+  const bpPermission =
+    user.permissions && user.permissions.includes("view-business-plan");
+  const spendingPermission =
+    user.permissions && user.permissions.includes("view-spending");
+
   return (
     <>
       <Space direction="vertical">
@@ -41,56 +48,18 @@ export default function DashboardPage() {
 
       <Flex gap="middle" wrap="wrap" vertical>
         <Flex gap="middle" wrap="wrap">
-          {user.permissions && user.permissions.includes("campaign-list") ? (
-            <Campaign />
-          ) : (
-            ""
-          )}
+          {campaignPermission ? <Campaign /> : ""}
           <Flex gap="middle" wrap="wrap" vertical>
-            {user.permissions &&
-            user.permissions.includes("view-business-plan") ? (
-              <BP />
-            ) : (
-              ""
-            )}
-            {user.permissions && user.permissions.includes("view-spending") ? (
-              <Spending />
-            ) : (
-              ""
-            )}
-            {user.permissions && user.permissions.includes("view-spending") ? (
-              <Spending />
-            ) : (
-              ""
-            )}
-
+            {bpPermission ? <BP /> : ""}
+            {spendingPermission ? <Spending /> : ""}
+            {spendingPermission ? <Spending /> : ""}
           </Flex>
         </Flex>
         <Flex gap="middle" wrap="wrap">
-          {user.permissions &&
-          user.permissions.includes("view-business-plan") ? (
-            <BP />
-          ) : (
-            ""
-          )}
-          {user.permissions &&
-          user.permissions.includes("view-business-plan") ? (
-            <BP />
-          ) : (
-            ""
-          )}
-          {user.permissions &&
-          user.permissions.includes("view-business-plan") ? (
-            <BP />
-          ) : (
-            ""
-          )}
-          {user.permissions &&
-          user.permissions.includes("view-business-plan") ? (
-            <BP />
-          ) : (
-            ""
-          )}
+          {bpPermission ? <BP /> : ""}
+          {bpPermission ? <BP /> : ""}
+          {bpPermission ? <BP /> : ""}
+          {spendingPermission ? <Spending /> : ""}
         </Flex>
       </Flex>
     </>

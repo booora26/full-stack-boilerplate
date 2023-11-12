@@ -52,9 +52,9 @@ const items = [
             label: "Roles",
           },
           {
-            key: "2-1",
+            key: "2-3",
             label: "Groups",
-            permission: 'view-authorization',
+            // permission: 'view-authorization',
 
           },
         ],
