@@ -8,6 +8,8 @@ import { AuthzModule } from './authz/authz.module';
 import { RouterModule } from '@nestjs/core';
 import { AUTHZ_ROUTES } from './authz/authz-routes';
 import { SeedModule } from './seed/seed.module';
+import { AppointmentModule } from './appointment/appointment.module';
+import { ShiftsModule } from './shifts/shifts.module';
 
 const ROUTES = [...AUTHZ_ROUTES];
 
@@ -40,6 +42,8 @@ const ROUTES = [...AUTHZ_ROUTES];
     AuthModule,
     AuthzModule,
     SeedModule,
+    AppointmentModule,
+    ShiftsModule,
   ],
   controllers: [],
   providers: [],
