@@ -16,6 +16,8 @@ export class AppointmentEntity extends CrudEntity {
   date: Date;
   @Column()
   slot: string;
+  @Column({ default: 0 })
+  slotNumber: number;
   @Column({
     type: 'enum',
     enum: AppointementStatus,

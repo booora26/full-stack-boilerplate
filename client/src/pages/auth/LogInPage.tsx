@@ -6,7 +6,7 @@ export const LogInPage = () => {
   return (
     <>
     <Row>
-      <Col span={6} offset={9} style={{marginTop: '50px'}}>
+      <Col sm={{span: 24 }} lg={{span:6, offset:9 }} style={{marginTop: '50px'}}>
       <LogIn />
       </Col>
     </Row>

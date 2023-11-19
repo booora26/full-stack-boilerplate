@@ -1,4 +1,6 @@
-const url = "http://localhost:4010/auth";
+import { SERVER_URL } from "../constants";
+
+const url = `${SERVER_URL}/auth`;
 
 export const logIn = async (value) => {
   const { email, password } = value;

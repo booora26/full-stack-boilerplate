@@ -1,4 +1,4 @@
-import { Body, Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, ParseIntPipe, Patch } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
 import { CrudController } from '../crud/crud.controller';
 import { AppointmentEntity } from './appointment.entity';
@@ -14,11 +14,13 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
     @Body('shopId') shopId: number,
     @Body('employeeId') employeeId: number,
     @Body('date') date: Date,
+    @Body('serviceId') serviceId: number,
   ) {
     const freeSlots = await this.service.freeSlotsByEmployee(
       shopId,
       employeeId,
       date,
+      serviceId,
     );
 
     return freeSlots;
@@ -54,5 +56,15 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
     const allSlots = await this.service.generateAllSlots(schedule);
 
     return allSlots;
+  }
+
+  @Patch('book')
+  async bookFreeSlots(
+    @Body('id', ParseIntPipe) id: number,
+    @Body('serviceSlots', ParseIntPipe) serviceSlots: number,
+  ) {
+    const res = this.service.bookFreeSlots(id, serviceSlots);
+
+    return res;
   }
 }

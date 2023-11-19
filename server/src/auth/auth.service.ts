@@ -83,7 +83,8 @@ export class AuthService {
         return err;
       }
       // req.session.destroy;
-      res.redirect('http://localhost:3010/login');
+      const clientURL = this.configService.get('CLIENT_URL');
+      res.redirect(`${clientURL}/login`);
     });
     // req.session.cookie.maxAge = 0;
     req.session.destroy;
@@ -91,17 +92,19 @@ export class AuthService {
 
   async logOutImpersonateUser(req, res) {
     req.session.passport.user = req.user.originalUser;
-    res.redirect('http://localhost:3010');
+    const clientURL = this.configService.get('CLIENT_URL');
+    res.redirect(`${clientURL}`);
   }
 
   async otherLogIn(req, res) {
+    const clientURL = this.configService.get('CLIENT_URL');
     if (!req.user) {
       return console.log('No user');
     }
     if (req.user.isTwoFactorAuthenticationEnabled) {
-      return res.redirect('http://localhost:3010/2fa');
+      return res.redirect(`${clientURL}/2fa`);
     }
-    return res.redirect('http://localhost:3010');
+    return res.redirect(`${clientURL}`);
   }
 
   async generateTwoFactorAuthenticationSecret(user: UserEntity) {

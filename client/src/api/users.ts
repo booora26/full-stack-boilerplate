@@ -1,4 +1,7 @@
-const url = "http://localhost:4010/users";
+import { SERVER_URL } from "../constants";
+
+const url = `${SERVER_URL}/users`;
+
 
 export const getUsers = async () => {
 

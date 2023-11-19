@@ -7,6 +7,7 @@ import { AuthContext } from "../context/AuthContext";
 import { Spending } from "../components/Spending";
 import { BP } from "../components/BP";
 import { Campaign } from "../components/Campaign";
+import { CLIENT_URL, SERVER_URL } from "../constants";
 
 export default function DashboardPage() {
   const [user] = useContext(AuthContext);
@@ -36,10 +37,10 @@ export default function DashboardPage() {
           )}
         </Space>
 
-        <Link to={"http://localhost:3010/users"}>Users</Link>
+        <Link to={`${CLIENT_URL}/users`}>Users</Link>
 
         <br />
-        <Link to={"http://localhost:4010/auth/logout"}>
+        <Link to={`${SERVER_URL}/auth/logout`}>
           <Button type="primary" danger={user.originalUser}>
             Log Out
           </Button>

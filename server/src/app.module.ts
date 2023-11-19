@@ -10,6 +10,7 @@ import { AUTHZ_ROUTES } from './authz/authz-routes';
 import { SeedModule } from './seed/seed.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { ShiftsModule } from './shifts/shifts.module';
+import { ServicesModule } from './services/services.module';
 
 const ROUTES = [...AUTHZ_ROUTES];
 
@@ -44,6 +45,7 @@ const ROUTES = [...AUTHZ_ROUTES];
     SeedModule,
     AppointmentModule,
     ShiftsModule,
+    ServicesModule,
   ],
   controllers: [],
   providers: [],
