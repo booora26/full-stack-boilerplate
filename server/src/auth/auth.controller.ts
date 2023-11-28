@@ -19,6 +19,7 @@ import { GoogleGuard } from './guard/google.guard';
 import { GitHubGuard } from './guard/github.guard';
 import { UsersService } from '../users/users.service';
 import { TwoFAGuard } from './guard/twoFA.guard';
+import { en } from '@faker-js/faker';
 
 @Controller('auth')
 export class AuthController {

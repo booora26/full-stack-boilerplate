@@ -15,10 +15,12 @@ export class AuthService {
   ) {}
 
   async register(entity) {
+    console.log(entity);
+
     const { email, password } = entity;
     const user = await this.usersService.findByEmail(email);
 
-    if (!user.password) {
+    if (user && !user.password) {
       return await this.usersService.update(user.id, {
         password,
       });
