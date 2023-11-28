@@ -1,13 +1,15 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { CrudEntity } from '../crud/crud.entity';
 import { AppointementStatus } from './appointement-status.enum';
+import { EmployeeEntity } from '../employees/employee.entity';
+import { ShopEntity } from '../shop/shop.entity';
 
 @Entity({ name: 'appointements' })
 export class AppointmentEntity extends CrudEntity {
-  @Column()
-  shopId: number;
-  @Column()
-  employeeId: number;
+  @ManyToOne(() => ShopEntity, (shop) => shop.appointments)
+  shop: ShopEntity;
+  @ManyToOne(() => EmployeeEntity, (employee) => employee.appointements)
+  employee: EmployeeEntity;
   @Column({ nullable: true })
   userId?: number;
   @Column({ nullable: true })

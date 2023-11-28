@@ -34,32 +34,29 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
 
     const slotDuration = 30;
     const service = await this.servicesService.findOne(serviceId);
-    let serviceSlots: number;
-
-    service.duration > slotDuration
-      ? (serviceSlots = Math.ceil(service.duration / slotDuration))
-      : (serviceSlots = 1);
+    const serviceSlots = Math.max(
+      1,
+      Math.ceil(service.duration / slotDuration),
+    );
 
     const freeCurrentServiceSlots = [];
-
-    console.log('free slots', freeSlots);
-
     const fs = freeSlots.map((slot) => slot.slotNumber);
 
-    freeSlots.map((slot) => {
+    const arrayRange = (start, stop, step) =>
+      Array.from(
+        { length: (stop - start) / step + 1 },
+        (value, index) => start + index * step,
+      );
+    const isInRange = (arr, arr2) => arr.every((i) => arr2.includes(i));
+
+    freeSlots.forEach((slot) => {
       const start = slot.slotNumber;
       const stop = start + serviceSlots - 1;
-      const arrayRange = (start, stop, step) =>
-        Array.from(
-          { length: (stop - start) / step + 1 },
-          (value, index) => start + index * step,
-        );
       const range: number[] = arrayRange(start, stop, 1);
-      const isInRange = (arr, arr2) => {
-        return arr.every((i) => arr2.includes(i));
-      };
 
-      isInRange(range, fs) ? freeCurrentServiceSlots.push(slot) : '';
+      if (isInRange(range, fs)) {
+        freeCurrentServiceSlots.push(slot);
+      }
     });
 
     return { freeCurrentServiceSlots, serviceSlots };
@@ -92,19 +89,23 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
   }
 
   async generateAllSlots(schedule) {
-    const { shopId, dates } = schedule;
-    const shifts = await this.shiftService.getShiftsByShop(shopId);
+    const { shop, dates } = schedule;
+    const shifts = await this.shiftService.getShiftsByShop(shop.id);
 
     const slots = [];
-    dates.map((item) => {
+    dates.forEach((item) => {
       const date = item.date;
-      item.shifts.map((shift) => {
-        const employeeId = shift.employeeId;
-        let i = 0;
-        const currentShift = shifts.find((s) => s.id === shift.shiftId);
-        currentShift.slots.map((slot) => {
-          i++;
-          slots.push({ slot, shopId, date, employeeId, slotNumber: i });
+      item.shifts.forEach((shift) => {
+        const employee = shift.employee;
+        const currentShift = shifts.find((s) => s.id === shift.shift.id);
+        currentShift.slots.forEach((slot, index) => {
+          slots.push({
+            slot,
+            shop,
+            date,
+            employee,
+            slotNumber: index + 1,
+          });
         });
       });
     });
@@ -112,10 +113,8 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
   }
 
   async bookFreeSlots(id: number, serviceSlots: number) {
-    const ids = [];
-    for (let i = 0; i < serviceSlots; i++) {
-      ids.push(id + i);
-    }
+    const ids = Array.from({ length: serviceSlots }, (_, i) => id + i);
+
     const slots = await this.repo
       .createQueryBuilder('app')
       .where('app.id IN (:...ids)', { ids })
@@ -124,19 +123,13 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
       })
       .getMany();
 
-    let slotsStatus = true;
-
-    slots.length < serviceSlots ? (slotsStatus = false) : (slotsStatus = true);
-    let bookedSlots;
-    if (slotsStatus) {
-      bookedSlots = await this.repo
+    if (slots.length >= serviceSlots) {
+      return await this.repo
         .createQueryBuilder()
         .update(AppointmentEntity)
         .set({ status: AppointementStatus.BOOKED })
         .where({ id: In(ids) })
         .execute();
     }
-
-    return bookedSlots;
   }
 }

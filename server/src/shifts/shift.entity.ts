@@ -1,10 +1,11 @@
-import { BeforeInsert, Column, Entity } from 'typeorm';
+import { BeforeInsert, Column, Entity, ManyToOne } from 'typeorm';
 import { CrudEntity } from '../crud/crud.entity';
+import { ShopEntity } from '../shop/shop.entity';
 
 @Entity({ name: 'shifts' })
 export class ShiftEntity extends CrudEntity {
-  @Column()
-  shopId: number;
+  @ManyToOne(() => ShopEntity, (shop) => shop.shifts)
+  shop: ShopEntity;
   @Column()
   name: string;
   @Column()

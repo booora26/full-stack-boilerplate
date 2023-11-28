@@ -11,6 +11,9 @@ import { SeedModule } from './seed/seed.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { ShiftsModule } from './shifts/shifts.module';
 import { ServicesModule } from './services/services.module';
+import { ShopModule } from './shop/shop.module';
+import { RatesModule } from './rates/rates.module';
+import { EmployeesModule } from './employees/employees.module';
 
 const ROUTES = [...AUTHZ_ROUTES];
 
@@ -46,6 +49,9 @@ const ROUTES = [...AUTHZ_ROUTES];
     AppointmentModule,
     ShiftsModule,
     ServicesModule,
+    ShopModule,
+    RatesModule,
+    EmployeesModule,
   ],
   controllers: [],
   providers: [],

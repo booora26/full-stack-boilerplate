@@ -8,6 +8,7 @@ import {
 import * as crypto from 'crypto';
 import { CrudEntity } from '../../crud/crud.entity';
 import { RoleEntity } from '../../authz/roles/role.entity';
+import { UserRole } from '../user-roles.enum';
 
 @Entity({ name: 'users' })
 export class UserEntity extends CrudEntity {
@@ -21,6 +22,8 @@ export class UserEntity extends CrudEntity {
   image?: string;
   @Column({ default: false })
   externalProvider: boolean;
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+  role: UserRole;
 
   @Column({ nullable: true })
   twoFactorAuthenticationSecret?: string;
@@ -28,8 +31,8 @@ export class UserEntity extends CrudEntity {
   @Column({ default: false })
   isTwoFactorAuthenticationEnabled: boolean;
 
-  @ManyToMany(() => RoleEntity, (role) => role.users, { eager: true })
-  roles?: RoleEntity[];
+  // @ManyToMany(() => RoleEntity, (role) => role.users, { eager: true })
+  // roles?: RoleEntity[];
 
   @BeforeInsert()
   async hashPassword() {

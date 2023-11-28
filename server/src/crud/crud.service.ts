@@ -22,15 +22,22 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       throw new Error(err);
     }
   }
-  findAll(skip?: number, take?: number, relations?: string[]): Promise<T[]> {
+  async findAll(
+    skip?: number,
+    take?: number,
+    relations?: string[],
+  ): Promise<T[]> {
     try {
-      return this.repo.find({
+      const all = await this.repo.find({
         order: { id: 'ASC' },
         skip,
         take,
         relations,
-      }) as Promise<T[]>;
+      });
+      console.log('all', all);
+      return all as unknown as Promise<T[]>;
     } catch (err) {
+      console.log('err', err);
       throw new Error(err);
     }
   }

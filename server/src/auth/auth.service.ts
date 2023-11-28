@@ -4,11 +4,13 @@ import { UserEntity } from '../users/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { authenticator } from 'otplib';
 import { toFileStream } from 'qrcode';
+import { EmployeesService } from '../employees/employees.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
+    private readonly employeeService: EmployeesService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -37,8 +39,22 @@ export class AuthService {
     console.log('3 - auth service ValidateUser');
 
     const user = await this.usersService.findByEmail(email);
+    let employee;
+    if (!user) {
+      employee = await this.employeeService.findByEmail(email);
+    }
 
     console.log(provider, user);
+    if (
+      provider === 'local' &&
+      employee &&
+      employee.password &&
+      (await employee.validatePassword(password))
+    ) {
+      console.log('lokalna auth za emplyee');
+      const { password, salt, ...result } = employee;
+      return { ...result, provider };
+    }
     if (provider === 'impersonate' && user) {
       console.log('impersonate auth');
 

@@ -13,7 +13,7 @@ export class RoleEntity extends CrudEntity {
   })
   @JoinTable()
   permissions: PermissionEntity[];
-  @ManyToMany(() => UserEntity, (user) => user.roles)
-  @JoinTable()
-  users: UserEntity[];
+//   @ManyToMany(() => UserEntity, (user) => user.roles)
+//   @JoinTable()
+//   users: UserEntity[];
 }

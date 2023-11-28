@@ -2,6 +2,9 @@ import { Body, Controller, Get, ParseIntPipe, Patch } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
 import { CrudController } from '../crud/crud.controller';
 import { AppointmentEntity } from './appointment.entity';
+import { ShopEntity } from '../shop/shop.entity';
+import { EmployeeEntity } from '../employees/employee.entity';
+import { ServiceEntity } from '../services/service.entity';
 
 @Controller('appointment')
 export class AppointmentController extends CrudController<AppointmentEntity> {
@@ -11,39 +14,39 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
 
   @Get('free-by-emp')
   async freeSlotsByEmployee(
-    @Body('shopId') shopId: number,
-    @Body('employeeId') employeeId: number,
+    @Body('shop') shop: ShopEntity,
+    @Body('employee') employee: EmployeeEntity,
     @Body('date') date: Date,
-    @Body('serviceId') serviceId: number,
+    @Body('service') service: ServiceEntity,
   ) {
     const freeSlots = await this.service.freeSlotsByEmployee(
-      shopId,
-      employeeId,
+      shop.id,
+      employee.id,
       date,
-      serviceId,
+      service.id,
     );
 
     return freeSlots;
   }
   @Get('free-by-time')
   async freeSlotsByTime(
-    @Body('shopId') shopId: number,
+    @Body('shopId') shop: ShopEntity,
     @Body('slot') slot: string,
     @Body('date') date: Date,
   ) {
-    const freeSlots = await this.service.freeSlotsByTime(shopId, slot, date);
+    const freeSlots = await this.service.freeSlotsByTime(shop.id, slot, date);
 
     return freeSlots;
   }
   @Get('booked-by-emp')
   async bookedSlotsByEmployee(
-    @Body('shopId') shopId: number,
-    @Body('employeeId') employeeId: number,
+    @Body('shopId') shop: ShopEntity,
+    @Body('employeeId') employee: EmployeeEntity,
     @Body('date') date: Date,
   ) {
     const bookedSlots = await this.service.bookedSlotsByEmployee(
-      shopId,
-      employeeId,
+      shop.id,
+      employee.id,
       date,
     );
 

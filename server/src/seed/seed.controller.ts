@@ -13,4 +13,14 @@ export class SeedController {
   async seedUsers(@Param('numberOfUsers') numberOfUsers: number) {
     return await this.seedService.seedUsers(numberOfUsers);
   }
+
+  // controller for generating shops
+  @Get('shop')
+  async seedShop() {
+    return await this.seedService.seedShop();
+  }
+  @Get('shops/:numberOfShops')
+  async seedShops(@Param('numberOfShops') numberOfShops: number) {
+    return await this.seedService.seedShops(numberOfShops);
+  }
 }

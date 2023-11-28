@@ -12,11 +12,13 @@ import { ConfigModule } from '@nestjs/config';
 import { GitHubStrategy } from './strategies/github.strategy';
 import { ImpersonateStrategy } from './strategies/impersonate.strategy';
 import { TwoFAStrategy } from './strategies/twoFA.strategy';
+import { EmployeesModule } from '../employees/employees.module';
 
 @Module({
   imports: [
     UsersModule,
     ConfigModule,
+    EmployeesModule,
     PassportModule.register({ session: true }),
   ],
   controllers: [AuthController],
