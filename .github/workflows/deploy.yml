@@ -27,11 +27,11 @@ jobs:
       with:
         context: ./server
         push: true
-        tags: booora26/booking-server:latest
+        tags: booora26/booking:server
 
     - name: Build and push client Docker image
       uses: docker/build-push-action@v2
       with:
         context: ./client
         push: true
-        tags: booora26/booking-client:latest
+        tags: booora26/booking:client
