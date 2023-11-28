@@ -17,7 +17,7 @@ RUN npm ci
 
 
 
-CMD ["npm", "run", "start:dev"]
+CMD ["npm", "run", "start:prod"]
 
 ###################
 # BUILD FOR PRODUCTION
