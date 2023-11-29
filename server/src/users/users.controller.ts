@@ -38,7 +38,7 @@ export class UsersController extends CrudController<UserEntity> {
     // session.passport.user = user;
     // await (session.originalUser = req.originalUser);
 
-    res.redirect(`{$this.clientURL}/`);
+    res.redirect(`${this.clientURL}/`);
   }
 
   @Get('test2fa')
