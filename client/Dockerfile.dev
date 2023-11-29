@@ -2,7 +2,7 @@
 # BUILD FOR LOCAL DEVELOPMENT
 ###################
 
-FROM node:18.16-alpine As build
+FROM node:18.16-alpine As development
 
 # Create app directory
 WORKDIR /app
@@ -16,21 +16,9 @@ COPY --chown=node:node package*.json ./
 # Install app dependencies using the `npm ci` command instead of `npm install`
 RUN npm ci
 
-COPY . .
 
-
-RUN npm run build
+CMD ["npm", "run", "dev"]
 
 ###################
 # BUILD FOR PRODUCTION
 ###################
-
-FROM nginx:1.21-alpine as production
-
-COPY  --from=build /app/build /usr/share/nginx/html
-
-# Expose port
-EXPOSE 80
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]

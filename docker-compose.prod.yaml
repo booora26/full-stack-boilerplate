@@ -13,12 +13,10 @@ services:
     ports:
       - "6381:6379"
   server:
-    build:
-      dockerfile: Dockerfile
-      context: ./server
-    volumes:
-      - ./server:/app
-      - node_modules_server:/app/node_modules
+    image: booora26/booking:server
+    # volumes:
+    #   - ./server:/app
+    #   - node_modules_server:/app/node_modules
     # command: yarn run start:debug
     ports:
       - "4010:3000"
@@ -30,12 +28,10 @@ services:
       - PGPASSWORD=123
       - PGDATABASE=db
   client:
-    build:
-      dockerfile: Dockerfile.dev
-      context: ./client
-    volumes:
-        - ./client:/app
-        - node_modules_client:/app/node_modules
+    image: booora26/booking:client
+    # volumes:
+    #     - ./client:/app
+    #     - node_modules_client:/app/node_modules
     ports:
       - "3010:8080"
     depends_on:
