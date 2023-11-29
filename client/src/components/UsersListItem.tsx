@@ -24,14 +24,14 @@ export const UsersListItem = (props) => {
           </Col>
           <Col style={{ marginLeft: "10px" }}>
             <Row>
-              <Link to={`http://localhost:3010/users/${id}`}><Typography.Title level={5} style={{ margin: "5px" }}>
+              <Link to={`/users/${id}`}><Typography.Title level={5} style={{ margin: "5px" }}>
                 {email}
               </Typography.Title></Link>
             </Row>
             <Row>
               {user.permissions && user.permissions.includes("switch-user") ? (
                 <Link
-                  to={`http://localhost:4010/users/${id}/impersonate`}
+                  to={`/users/${id}/impersonate`}
                   style={{ margin: "5px" }}
                 >
                   Switch
