@@ -25,8 +25,8 @@ export class UsersController extends CrudController<UserEntity> {
 
   clientURL =
     this.configService.get('NODE_ENV') === 'DEVELOPMENT'
-      ? 'http://localhost:3010'
-      : 'http://46.101.119.174';
+      ? this.configService.get('CLIENT_DEV_URL')
+      : this.configService.get('CLIENT_PROD_URL');
 
   @UseGuards(ImpersonateGuard)
   @Get(':id/impersonate')
@@ -38,8 +38,6 @@ export class UsersController extends CrudController<UserEntity> {
     // session.originalUser = session.passport.user;
     // session.passport.user = user;
     // await (session.originalUser = req.originalUser);
-
-    console.log('impersonate', `${this.clientURL}`);
 
     res.redirect(`${this.clientURL}`);
   }
