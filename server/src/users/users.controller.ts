@@ -15,9 +15,17 @@ import { ImpersonateGuard } from '../auth/guard/impersonate.guard';
 
 @Controller('users')
 export class UsersController extends CrudController<UserEntity> {
-  constructor(protected readonly service: UsersService) {
+  constructor(
+    protected readonly service: UsersService,
+    private readonly configService: ConfigService,
+  ) {
     super(service);
   }
+
+  clientURL =
+    this.configService.get('NODE_ENV') === 'DEVELOPMENT'
+      ? this.configService.get('CLIENT_DEV_URL')
+      : this.configService.get('CLIENT_PROD_URL');
 
   @UseGuards(ImpersonateGuard)
   @Get(':id/impersonate')
@@ -30,7 +38,7 @@ export class UsersController extends CrudController<UserEntity> {
     // session.passport.user = user;
     // await (session.originalUser = req.originalUser);
 
-    res.redirect('/');
+    res.redirect(`{$this.clientURL}/`);
   }
 
   @Get('test2fa')
