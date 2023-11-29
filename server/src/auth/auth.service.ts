@@ -14,6 +14,11 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
+  clientURL =
+    this.configService.get('NODE_ENV') === 'DEVELOPMENT'
+      ? this.configService.get('CLIENT_DEV_URL')
+      : this.configService.get('CLIENT_PROD_URL');
+
   async register(entity) {
     console.log(entity);
 
@@ -101,8 +106,7 @@ export class AuthService {
         return err;
       }
       // req.session.destroy;
-      const clientURL = this.configService.get('CLIENT_URL');
-      res.redirect(`${clientURL}/login`);
+      res.redirect(`${this.clientURL}/login`);
     });
     // req.session.cookie.maxAge = 0;
     req.session.destroy;
@@ -110,19 +114,19 @@ export class AuthService {
 
   async logOutImpersonateUser(req, res) {
     req.session.passport.user = req.user.originalUser;
-    const clientURL = this.configService.get('CLIENT_URL');
-    res.redirect(`${clientURL}`);
+    res.redirect(`${this.clientURL}`);
   }
 
   async otherLogIn(req, res) {
-    const clientURL = this.configService.get('CLIENT_URL');
+    console.log('client url', process.env.NODE_ENV);
+
     if (!req.user) {
       return console.log('No user');
     }
     if (req.user.isTwoFactorAuthenticationEnabled) {
-      return res.redirect(`${clientURL}/2fa`);
+      return res.redirect(`${this.clientURL}/2fa`);
     }
-    return res.redirect(`${clientURL}`);
+    return res.redirect(`${this.clientURL}`);
   }
 
   async generateTwoFactorAuthenticationSecret(user: UserEntity) {

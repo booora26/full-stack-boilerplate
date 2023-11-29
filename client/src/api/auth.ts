@@ -1,6 +1,11 @@
-import { SERVER_URL } from "../constants";
+import { SERVER_DEV_URL, SERVER_PROD_URL } from "../constants";
 
-const url = `${SERVER_URL}/auth`;
+const serverURL =
+process.env.NODE_ENV === 'DEVELOPMENT'
+  ? SERVER_DEV_URL
+  : SERVER_PROD_URL;
+
+const url = `${serverURL}/auth`;
 
 export const logIn = async (value) => {
   const { email, password } = value;

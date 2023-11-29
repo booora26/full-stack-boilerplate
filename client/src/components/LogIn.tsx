@@ -7,7 +7,12 @@ import {
 } from "@ant-design/icons";
 import {  logIn } from "../api/auth";
 import { Link, useNavigate } from "react-router-dom";
-import { SERVER_URL } from "../constants";
+import { SERVER_DEV_URL, SERVER_PROD_URL } from "../constants";
+
+const serverURL =
+process.env.NODE_ENV === 'DEVELOPMENT'
+  ? SERVER_DEV_URL
+  : SERVER_PROD_URL;
 
 export const LogIn = () => {
   const navigate = useNavigate();
@@ -37,7 +42,7 @@ export const LogIn = () => {
           <Typography.Title level={3}> LOG IN </Typography.Title>
         </Form.Item>
         <Form.Item>
-          <Link to={`${SERVER_URL}/auth/google`}>
+          <Link to={`${serverURL}/auth/google`}>
             <Button
               className="login-form-button"
               block
@@ -48,7 +53,7 @@ export const LogIn = () => {
           </Link>
         </Form.Item>
         <Form.Item>
-          <Link to={`${SERVER_URL}/auth/github`}>
+          <Link to={`${serverURL}/auth/github`}>
             <Button
               className="login-form-button"
               block

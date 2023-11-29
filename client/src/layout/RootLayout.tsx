@@ -9,6 +9,16 @@ import type { MenuProps } from "antd";
 import { Layout, Menu, theme } from "antd";
 import { Link, Outlet } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { SERVER_DEV_URL, SERVER_PROD_URL, CLIENT_DEV_URL, CLIENT_PROD_URL } from "../constants";
+
+const serverURL =
+process.env.NODE_ENV === 'DEVELOPMENT'
+  ? SERVER_DEV_URL
+  : SERVER_PROD_URL;
+const clientURL =
+process.env.NODE_ENV === 'DEVELOPMENT'
+  ? CLIENT_DEV_URL
+  : CLIENT_PROD_URL;
 
 const { Content, Sider } = Layout;
 
@@ -20,12 +30,12 @@ const items = [
   {
     key: '2',
     icon: <HomeOutlined />,
-    label: <Link to={"http://localhost:3010/"}>Home</Link>,
+    label: <Link to={`${clientURL}/`}>Home</Link>,
   },
   {
     key: 1,
     icon: <IdcardOutlined />,
-    permission: 'view-admin',
+    // permission: 'view-admin',
     children: [
       {
         type: "group", // Must have
@@ -34,7 +44,7 @@ const items = [
           {
             key: "1-1",
             // icon: <UserOutlined />,
-            label: <Link to={"http://localhost:3010/users"}>Users</Link>,
+            label: <Link to={`${clientURL}/users`}>Users</Link>,
           },
         ],
       },

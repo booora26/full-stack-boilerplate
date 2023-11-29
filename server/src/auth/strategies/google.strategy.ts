@@ -22,6 +22,11 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
+  serverURL =
+    process.env.NODE_ENV === 'DEVELOPMENT'
+      ? this.configService.get('SERVER_DEV_URL')
+      : this.configService.get('SERVER_PROD_URL');
+
   async validate(
     req,
     accessToken: string,

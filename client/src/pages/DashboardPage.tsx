@@ -6,7 +6,16 @@ import { AuthContext } from "../context/AuthContext";
 import { Spending } from "../components/Spending";
 import { BP } from "../components/BP";
 import { Campaign } from "../components/Campaign";
-import { CLIENT_URL, SERVER_URL } from "../constants";
+import { CLIENT_DEV_URL, CLIENT_PROD_URL, SERVER_DEV_URL, SERVER_PROD_URL } from "../constants";
+
+const serverURL =
+process.env.NODE_ENV === 'DEVELOPMENT'
+  ? SERVER_DEV_URL
+  : SERVER_PROD_URL;
+const clientURL =
+process.env.NODE_ENV === 'DEVELOPMENT'
+  ? CLIENT_DEV_URL
+  : CLIENT_PROD_URL;
 
 export default function DashboardPage() {
   const [user] = useContext(AuthContext);
@@ -15,6 +24,9 @@ export default function DashboardPage() {
   //   const res = await logOut()
   // }
 
+  console.log('serverURL', serverURL)
+  console.log('clientURL', clientURL)
+  
   const campaignPermission =
     user.permissions && user.permissions.includes("campaign-list");
   const bpPermission =
@@ -36,10 +48,10 @@ export default function DashboardPage() {
           )}
         </Space>
 
-        <Link to={`${CLIENT_URL}/users`}>Users</Link>
+        <Link to={`${clientURL}/users`}>Users</Link>
 
         <br />
-        <Link to={`${SERVER_URL}/auth/logout`}>
+        <Link to={`${serverURL}/auth/logout`}>
           <Button type="primary" danger={user.originalUser}>
             Log Out
           </Button>

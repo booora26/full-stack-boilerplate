@@ -30,7 +30,7 @@ import { EmployeesModule } from '../employees/employees.module';
     GitHubStrategy,
     ImpersonateStrategy,
     TwoFAStrategy,
-    // { provide: APP_GUARD, useClass: AuthenticatedGuard }, // omogucavan da Guard postane globalni
+    { provide: APP_GUARD, useClass: AuthenticatedGuard }, // omogucavan da Guard postane globalni
   ],
   exports: [AuthService],
 })
