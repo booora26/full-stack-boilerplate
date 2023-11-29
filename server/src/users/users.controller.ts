@@ -1,25 +1,17 @@
 import {
   Controller,
   Get,
-  NotFoundException,
   Param,
   Session,
   Response,
   Request,
   UseGuards,
-  Post,
   Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CrudController } from '../crud/crud.controller';
 import { UserEntity } from './entities/user.entity';
-import { LocalAuthGuard } from '../auth/guard/local-auth.guard';
-import { GoogleGuard } from '../auth/guard/google.guard';
-import { Provider } from '../auth/decotators/provider.decorator';
-import { AuthGuard } from '@nestjs/passport';
 import { ImpersonateGuard } from '../auth/guard/impersonate.guard';
-import { session } from 'passport';
-import { TwoFAGuard } from '../auth/guard/twoFA.guard';
 
 @Controller('users')
 export class UsersController extends CrudController<UserEntity> {
@@ -29,12 +21,7 @@ export class UsersController extends CrudController<UserEntity> {
 
   @UseGuards(ImpersonateGuard)
   @Get(':id/impersonate')
-  async impersonate(
-    @Param('id') id: number,
-    @Response() res,
-    @Request() req,
-    @Session() session,
-  ) {
+  async impersonate(@Response() res) {
     // const user = await this.service.findOne(id);
     // if (!user) {
     //   throw new NotFoundException();
@@ -43,7 +30,7 @@ export class UsersController extends CrudController<UserEntity> {
     // session.passport.user = user;
     // await (session.originalUser = req.originalUser);
 
-    res.redirect('http://localhost:3010');
+    res.redirect('/');
   }
 
   @Get('test2fa')

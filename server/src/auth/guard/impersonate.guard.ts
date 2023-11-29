@@ -46,7 +46,6 @@ export class ImpersonateGuard extends AuthGuard('impersonate') {
     await super.logIn(request);
 
     console.log('7 -ImpersonateGuard  posle logIn');
-    console.log('info', request);
 
     // if no exceptions were thrown, allow the access to the route
     return true;

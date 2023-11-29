@@ -114,6 +114,7 @@ export class AuthService {
 
   async logOutImpersonateUser(req, res) {
     req.session.passport.user = req.user.originalUser;
+    console.log('client url', process.env.NODE_ENV);
     res.redirect(`${this.clientURL}`);
   }
 
