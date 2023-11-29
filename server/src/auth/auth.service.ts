@@ -126,9 +126,11 @@ export class AuthService {
       return console.log('No user');
     }
     if (req.user.isTwoFactorAuthenticationEnabled) {
-      return res.redirect(`${this.clientURL}/2fa`);
+      await res.redirect(`${this.clientURL}/2fa`);
+      return;
     }
-    return res.redirect(`${this.clientURL}`);
+    await res.redirect(`${this.clientURL}`);
+    return;
   }
 
   async generateTwoFactorAuthenticationSecret(user: UserEntity) {
