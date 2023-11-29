@@ -12,12 +12,13 @@ import { UsersService } from './users.service';
 import { CrudController } from '../crud/crud.controller';
 import { UserEntity } from './entities/user.entity';
 import { ImpersonateGuard } from '../auth/guard/impersonate.guard';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('users')
 export class UsersController extends CrudController<UserEntity> {
   constructor(
     protected readonly service: UsersService,
-    private readonly configService: ConfigService,
+    protected readonly configService: ConfigService,
   ) {
     super(service);
   }

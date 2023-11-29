@@ -106,9 +106,10 @@ export class AuthService {
         return err;
       }
       // req.session.destroy;
-      res.redirect(`${this.clientURL}/login`);
     });
     // req.session.cookie.maxAge = 0;
+    res.redirect(`${this.clientURL}`);
+
     req.session.destroy;
   }
 
