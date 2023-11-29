@@ -1,5 +1,4 @@
-import { Button, Col, Flex, Row, Space } from "antd";
-import useConfig from "antd/es/config-provider/hooks/useConfig";
+import { Button, Flex, Space } from "antd";
 import { useContext } from "react";
 // import { logOut } from "../api/auth";
 import { Link } from "react-router-dom";

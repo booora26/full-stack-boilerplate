@@ -27,7 +27,9 @@ RUN npm run build
 
 FROM nginx:1.21-alpine as production
 
-COPY  --from=build /app/build /usr/share/nginx/html
+ENV NODE_ENV production
+
+COPY  --from=build /app/dist /usr/share/nginx/html
 
 # Expose port
 EXPOSE 80

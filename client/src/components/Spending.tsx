@@ -1,5 +1,4 @@
 import { Row, Typography, Col, Button } from 'antd'
-import React from 'react'
 
 export const Spending = () => {
   return (

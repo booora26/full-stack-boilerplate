@@ -1,5 +1,4 @@
 // import { Flex, Row, Space, Typography, theme } from 'antd'
-import React from 'react'
 import { List } from './List'
 import { CampaignListItem } from './campaign/CampaignListItem'
 

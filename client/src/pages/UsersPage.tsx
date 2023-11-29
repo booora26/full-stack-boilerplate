@@ -1,7 +1,6 @@
-import React from "react";
 import { getUsers } from "../api/users";
-import { Link, Outlet, useLoaderData } from "react-router-dom";
-import { Col, Row, Space, Typography } from "antd";
+import { Outlet, useLoaderData } from "react-router-dom";
+import { Col, Row } from "antd";
 import { UserList } from "../components/UserList";
 
 export const UsersPage = () => {

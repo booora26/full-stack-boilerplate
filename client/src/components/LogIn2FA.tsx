@@ -1,5 +1,4 @@
 import { Button, Form, Input, message } from "antd";
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { logIn2FA } from "../api/auth";
 
@@ -7,7 +6,7 @@ export const LogIn2FA = () => {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: unknown) => {
     const res = await logIn2FA(values);
     console.log("2fa res", res);
     if (res.error === 'Unauthorized') {

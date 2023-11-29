@@ -1,4 +1,3 @@
-import React from 'react';
 import { LogIn } from '../../components/LogIn';
 import { Col, Row } from 'antd';
 

@@ -1,4 +1,3 @@
-import React, { useContext } from "react";
 import { Button, Checkbox, Form, Input, Typography } from "antd";
 import {
   GithubOutlined,
@@ -14,7 +13,7 @@ export const LogIn = () => {
   const navigate = useNavigate();
   // const [user, setUser] = useContext(AuthContext)
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: unknown) => {
     const res = await logIn(values);
     if (!res) {
 

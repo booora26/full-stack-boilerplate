@@ -1,5 +1,4 @@
 import { message, Form, Input, Button } from 'antd';
-import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import {  resetPassword } from '../api/auth';
 
@@ -7,7 +6,7 @@ export const ResetPassword = () => {
     const navigate = useNavigate();
     const [messageApi, contextHolder] = message.useMessage();
   
-    const onFinish = async (values: any) => {
+    const onFinish = async (values: unknown) => {
       const res = await resetPassword(values);
       console.log("reset password", res);
       if (res.error) {

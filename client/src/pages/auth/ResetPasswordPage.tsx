@@ -1,5 +1,4 @@
 import { Row, Col } from 'antd'
-import React from 'react'
 import { ResetPassword } from '../../components/ResetPassword'
 
 export const ResetPasswordPage = () => {
