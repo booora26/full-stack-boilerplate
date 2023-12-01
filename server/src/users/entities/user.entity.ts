@@ -4,11 +4,13 @@ import {
   Column,
   Entity,
   ManyToMany,
+  OneToMany,
 } from 'typeorm';
 import * as crypto from 'crypto';
 import { CrudEntity } from '../../crud/crud.entity';
 import { RoleEntity } from '../../authz/roles/role.entity';
 import { UserRole } from '../user-roles.enum';
+import { AppointmentEntity } from '../../appointment/appointment.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends CrudEntity {
@@ -33,6 +35,9 @@ export class UserEntity extends CrudEntity {
 
   // @ManyToMany(() => RoleEntity, (role) => role.users, { eager: true })
   // roles?: RoleEntity[];
+
+  // @OneToMany(() => AppointmentEntity, (appointment) => appointment.user)
+  // appointement?: AppointmentEntity[];
 
   @BeforeInsert()
   async hashPassword() {

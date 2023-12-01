@@ -5,6 +5,7 @@ import { AppointmentEntity } from './appointment.entity';
 import { ShopEntity } from '../shop/shop.entity';
 import { EmployeeEntity } from '../employees/employee.entity';
 import { ServiceEntity } from '../services/service.entity';
+import { UserEntity } from '../users/entities/user.entity';
 
 @Controller('appointment')
 export class AppointmentController extends CrudController<AppointmentEntity> {
@@ -65,8 +66,10 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
   async bookFreeSlots(
     @Body('id', ParseIntPipe) id: number,
     @Body('serviceSlots', ParseIntPipe) serviceSlots: number,
+    @Body('user') user,
+    @Body('service') service,
   ) {
-    const res = this.service.bookFreeSlots(id, serviceSlots);
+    const res = this.service.bookFreeSlots(id, serviceSlots, user, service);
 
     return res;
   }

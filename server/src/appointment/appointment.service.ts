@@ -7,6 +7,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ShiftsService } from '../shifts/shifts.service';
 import { ServicesService } from '../services/services.service';
 import { AppointementStatus } from './appointement-status.enum';
+import { UserEntity } from '../users/entities/user.entity';
+import { ServiceEntity } from '../services/service.entity';
 
 @Injectable()
 export class AppointmentService extends CrudService<AppointmentEntity> {
@@ -112,7 +114,12 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
     return await this.repo.save(slots);
   }
 
-  async bookFreeSlots(id: number, serviceSlots: number) {
+  async bookFreeSlots(
+    id: number,
+    serviceSlots: number,
+    user: UserEntity,
+    service: ServiceEntity,
+  ) {
     const ids = Array.from({ length: serviceSlots }, (_, i) => id + i);
 
     const slots = await this.repo
@@ -127,7 +134,7 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
       return await this.repo
         .createQueryBuilder()
         .update(AppointmentEntity)
-        .set({ status: AppointementStatus.BOOKED })
+        .set({ status: AppointementStatus.BOOKED, user, service })
         .where({ id: In(ids) })
         .execute();
     }
