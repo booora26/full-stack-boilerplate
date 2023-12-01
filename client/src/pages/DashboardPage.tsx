@@ -38,7 +38,7 @@ export default function DashboardPage() {
     <>
       <Space direction="vertical">
         <Space direction="vertical">
-          <p>User: {user.email}</p>
+          <p>Logged in as: {user.email}</p>
           <p>Provider: {user.provider}</p>
           <p>2FA: {user.isTwoFactorAuthenticationEnabled ? "yes" : "no"}</p>
           {user.provider === "impersonate" ? (

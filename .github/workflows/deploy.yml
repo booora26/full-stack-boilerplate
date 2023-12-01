@@ -36,6 +36,7 @@ jobs:
         push: true
         tags: booora26/booking:client
   deploy:
+          needs: build-and-push
           runs-on: ubuntu-latest
       
           steps:
