@@ -35,3 +35,21 @@ jobs:
         context: ./client
         push: true
         tags: booora26/booking:client
+  deploy:
+          runs-on: ubuntu-latest
+      
+          steps:
+          - name: Checkout code
+            uses: actions/checkout@v2
+      
+          - name: Execute remote ssh commands to update Docker Compose
+            uses: appleboy/ssh-action@master
+            with:
+              host: ${{ secrets.DROPLET_IP }}
+              username: ${{ secrets.DROPLET_USER }}
+              key: ${{ secrets.DROPLET_SSH_KEY }}
+              script: |
+                cd /home/boris/projects/booking-app
+                docker-compose down
+                docker-compose pull
+                docker-compose up -d
