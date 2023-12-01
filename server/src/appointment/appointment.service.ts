@@ -21,6 +21,13 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
   ) {
     super(repo, eventEmmiter);
   }
+  arrayRange = (start, stop, step) =>
+    Array.from(
+      { length: (stop - start) / step + 1 },
+      (_, index) => start + index * step,
+    );
+
+  isInRange = (arr, set) => arr.every((i) => set.has(i));
 
   async freeSlotsByEmployee(shopId, employeeId, date, serviceId) {
     const freeSlots = await this.repo
@@ -41,24 +48,14 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
       Math.ceil(service.duration / slotDuration),
     );
 
-    const freeCurrentServiceSlots = [];
-    const fs = freeSlots.map((slot) => slot.slotNumber);
+    const fs = new Set(freeSlots.map((slot) => slot.slotNumber));
 
-    const arrayRange = (start, stop, step) =>
-      Array.from(
-        { length: (stop - start) / step + 1 },
-        (value, index) => start + index * step,
-      );
-    const isInRange = (arr, arr2) => arr.every((i) => arr2.includes(i));
-
-    freeSlots.forEach((slot) => {
+    const freeCurrentServiceSlots = freeSlots.filter((slot) => {
       const start = slot.slotNumber;
       const stop = start + serviceSlots - 1;
-      const range: number[] = arrayRange(start, stop, 1);
+      const range: number[] = this.arrayRange(start, stop, 1);
 
-      if (isInRange(range, fs)) {
-        freeCurrentServiceSlots.push(slot);
-      }
+      return this.isInRange(range, fs);
     });
 
     return { freeCurrentServiceSlots, serviceSlots };
@@ -122,15 +119,15 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
   ) {
     const ids = Array.from({ length: serviceSlots }, (_, i) => id + i);
 
-    const slots = await this.repo
+    const availableSlotsCount = await this.repo
       .createQueryBuilder('app')
       .where('app.id IN (:...ids)', { ids })
       .andWhere('app.status = :status', {
         status: AppointementStatus.AVAILABLE,
       })
-      .getMany();
+      .getCount();
 
-    if (slots.length >= serviceSlots) {
+    if (availableSlotsCount >= serviceSlots) {
       return await this.repo
         .createQueryBuilder()
         .update(AppointmentEntity)
