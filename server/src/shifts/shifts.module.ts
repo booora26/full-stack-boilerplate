@@ -3,7 +3,6 @@ import { ShiftsService } from './shifts.service';
 import { ShiftsController } from './shifts.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ShiftEntity } from './shift.entity';
-import { ShiftMiddleware } from './middlewars/shift/shift.middleware';
 import { ShopModule } from '../shop/shop.module';
 
 @Module({
@@ -12,8 +11,4 @@ import { ShopModule } from '../shop/shop.module';
   providers: [ShiftsService],
   exports: [ShiftsService],
 })
-export class ShiftsModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(ShiftMiddleware).forRoutes(ShiftsController);
-  }
-}
+export class ShiftsModule {}
