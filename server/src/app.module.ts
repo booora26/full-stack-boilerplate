@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -14,6 +15,7 @@ import { ServicesModule } from './services/services.module';
 import { ShopModule } from './shop/shop.module';
 import { RatesModule } from './rates/rates.module';
 import { EmployeesModule } from './employees/employees.module';
+import * as redisStore from 'cache-manager-ioredis';
 
 const ROUTES = [...AUTHZ_ROUTES];
 
@@ -39,6 +41,19 @@ const ROUTES = [...AUTHZ_ROUTES];
         autoLoadEntities: true,
         synchronize: true,
         subscribers: [],
+      }),
+    }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        store: redisStore,
+        host: configService.get('REDIS_HOST'),
+        port: configService.get('REDIS_PORT'),
+        ttl: null, // time to live in seconds
+        // ttl: configService.get('CACHE_TTL'), // time to live in seconds
+        // max: configService.get('MAX_ITEM_IN_CACHE'), // maximum number of items in cache
       }),
     }),
     EventEmitterModule.forRoot(),

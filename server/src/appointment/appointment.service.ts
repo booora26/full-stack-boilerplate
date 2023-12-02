@@ -91,23 +91,21 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
     const { shop, dates } = schedule;
     const shifts = await this.shiftService.getShiftsByShop(shop.id);
 
-    const slots = [];
-    dates.forEach((item) => {
+    const slots = dates.flatMap((item) => {
       const date = item.date;
-      item.shifts.forEach((shift) => {
+      return item.shifts.flatMap((shift) => {
         const employee = shift.employee;
         const currentShift = shifts.find((s) => s.id === shift.shift.id);
-        currentShift.slots.forEach((slot, index) => {
-          slots.push({
-            slot,
-            shop,
-            date,
-            employee,
-            slotNumber: index + 1,
-          });
-        });
+        return currentShift.slots.map((slot, index) => ({
+          slot,
+          shop,
+          date,
+          employee,
+          slotNumber: index + 1,
+        }));
       });
     });
+
     return await this.repo.save(slots);
   }
 
@@ -119,21 +117,19 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
   ) {
     const ids = Array.from({ length: serviceSlots }, (_, i) => id + i);
 
-    const availableSlotsCount = await this.repo
-      .createQueryBuilder('app')
-      .where('app.id IN (:...ids)', { ids })
-      .andWhere('app.status = :status', {
+    const updateResult = await this.repo
+      .createQueryBuilder()
+      .update(AppointmentEntity)
+      .set({ status: AppointementStatus.BOOKED, user, service })
+      .where('id IN (:...ids)', { ids })
+      .andWhere('status = :status', {
         status: AppointementStatus.AVAILABLE,
       })
-      .getCount();
+      .returning('*')
+      .execute();
 
-    if (availableSlotsCount >= serviceSlots) {
-      return await this.repo
-        .createQueryBuilder()
-        .update(AppointmentEntity)
-        .set({ status: AppointementStatus.BOOKED, user, service })
-        .where({ id: In(ids) })
-        .execute();
+    if (updateResult.affected >= serviceSlots) {
+      return updateResult.raw;
     }
   }
 }
