@@ -6,8 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  Put,
-  Query,
 } from '@nestjs/common';
 import { ShiftsService } from './shifts.service';
 import { ShiftEntity } from './shift.entity';
@@ -39,7 +37,6 @@ export class ShiftsController extends CrudController<ShiftEntity> {
       throw new BadRequestException('Shop is missing in request body');
     }
 
-    console.log('updateShift', id, shiftData);
     const shift = await this.service.updateShift(id, shiftData);
     return shift;
   }

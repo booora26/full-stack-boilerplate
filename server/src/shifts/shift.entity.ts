@@ -1,4 +1,4 @@
-import { AfterInsert, AfterUpdate, BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne } from 'typeorm';
 import { CrudEntity } from '../crud/crud.entity';
 import { ShopEntity } from '../shop/shop.entity';
 
