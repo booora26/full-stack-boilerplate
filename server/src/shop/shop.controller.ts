@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Inject,
-  ParseIntPipe,
-  Body,
-  Patch,
-} from '@nestjs/common';
+import { Controller, Get, Param, Inject, Body, Patch } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ShopService } from './shop.service';
@@ -26,7 +18,6 @@ export class ShopController extends CrudController<ShopEntity> {
   async findOne(@Param('id') id: string): Promise<ShopEntity> {
     const cacheKey = `shop_${id}`;
     let shop: ShopEntity = await this.cacheManager.get(cacheKey);
-    console.log('shop', shop);
     if (!shop) {
       shop = await this.service.findOne(+id);
       await this.cacheManager.set(cacheKey, shop);
