@@ -77,13 +77,11 @@ const items = [
 
 export const RootLayout = () => {
   const [collapsed, setCollapsed] = useState(true);
-  const [user] = useContext(AuthContext);
+  const [user] = useContext(AuthContext) || []; // Add null check
 
-  
+  console.log('user', user);
 
-  console.log('user', user)
-
-  function filterListByPermissions(list, allowedPermissions) {
+  function filterListByPermissions(list: any[], allowedPermissions: string[]) {
     // console.log('a perm', allowedPermissions)
     return list.filter(item => {
       console.log('item', item)

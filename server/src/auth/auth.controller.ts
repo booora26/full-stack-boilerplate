@@ -7,7 +7,6 @@ import {
   Get,
   Req,
   Body,
-  Session,
   Res,
   HttpCode,
   UnauthorizedException,
@@ -31,12 +30,14 @@ export class AuthController {
   @Public()
   @Post('login')
   async login(@Req() req) {
-    console.log('8 - local login controler');
-    if (req.user.isTwoFactorAuthenticationEnabled) {
-      return true;
-    }
+    console.log('8 - local login controller');
+
     if (!req.user) {
       throw new Error('Authentication error');
+    }
+
+    if (req.user.isTwoFactorAuthenticationEnabled) {
+      return true;
     }
 
     return true;
@@ -46,24 +47,26 @@ export class AuthController {
   @Post('register')
   async register(@Body() entity: any) {
     try {
-      return this.authService.register(entity);
-    } catch {
-      throw new Error('user exists');
+      return await this.authService.register(entity);
+    } catch (error) {
+      console.error('Error in register:', error);
+      throw new Error('User exists or other error occurred');
     }
   }
 
   @Get('logout')
   async logout(@Request() req, @Response() res) {
-    // const originalUser = req.session.originalUser;
-    // const currentUser = req.session.passport.user;
-
-    // if (originalUser && currentUser.email !== originalUser.email) {
-    if (req.user.originalUser) {
-      console.log('vraca originalnog usera', req.user.originalUser);
-      return this.authService.logOutImpersonateUser(req, res);
+    try {
+      if (req.user.originalUser) {
+        console.log('Returning original user', req.user.originalUser);
+        return this.authService.logOutImpersonateUser(req, res);
+      }
+      console.log('Not returning original user');
+      return this.authService.logOut(req, res);
+    } catch (error) {
+      console.error('Error in logout:', error);
+      res.status(500).send('Error during logout');
     }
-    console.log('ne vraca originalnog usera');
-    return this.authService.logOut(req, res);
   }
 
   @Get()
@@ -121,21 +124,29 @@ export class AuthController {
     @Res() response,
     @Body('twoFactorAuthenticationCode') twoFactorAuthenticationCode,
   ) {
-    const user = await this.usersService.findOne(request.user.id);
-    const isCodeValid =
-      await this.authService.isTwoFactorAuthenticationCodeValid(
-        twoFactorAuthenticationCode,
-        user,
-      );
-    if (!isCodeValid) {
-      throw new UnauthorizedException('Wrong authentication code');
-    }
-    const updatedUser = await this.usersService.turnOnTwoFactorAuthentication(
-      request.user.id,
-    );
+    try {
+      const user = await this.usersService.findOne(request.user.id);
+      const isCodeValid =
+        await this.authService.isTwoFactorAuthenticationCodeValid(
+          twoFactorAuthenticationCode,
+          user,
+        );
 
-    if (updatedUser.affected > 0)
-      return this.authService.logOut(request, response);
+      if (!isCodeValid) {
+        throw new UnauthorizedException('Wrong authentication code');
+      }
+
+      const updatedUser = await this.usersService.turnOnTwoFactorAuthentication(
+        request.user.id,
+      );
+
+      if (updatedUser.affected > 0) {
+        return this.authService.logOut(request, response);
+      }
+    } catch (error) {
+      console.error('Error in turnOnTwoFactorAuthentication:', error);
+      throw new Error('Error during two-factor authentication setup');
+    }
   }
 
   @UseGuards(TwoFAGuard)

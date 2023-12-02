@@ -35,7 +35,11 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
     @Body('slot') slot: string,
     @Body('date') date: Date,
   ) {
-    const freeSlots = await this.service.freeSlotsByTime(shop.id, slot, date);
+    const freeSlots = await this.service.getAvailableSlotsByTime(
+      shop.id,
+      slot,
+      date,
+    );
 
     return freeSlots;
   }
@@ -45,7 +49,7 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
     @Body('employeeId') employee: EmployeeEntity,
     @Body('date') date: Date,
   ) {
-    const bookedSlots = await this.service.bookedSlotsByEmployee(
+    const bookedSlots = await this.service.getBookedSlotsByEmployee(
       shop.id,
       employee.id,
       date,

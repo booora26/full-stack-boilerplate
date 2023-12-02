@@ -1,99 +1,97 @@
 import { Injectable } from '@nestjs/common';
-import { ICrudService } from './crud.service.inerface';
-import { CrudEntity } from './crud.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, Repository } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, Equal } from 'typeorm';
+import { CrudEntity } from './crud.entity';
+import { ICrudService } from './crud.service.inerface';
 
 @Injectable()
 export class CrudService<T extends CrudEntity> implements ICrudService<T> {
   constructor(
     @InjectRepository(CrudEntity)
-    protected readonly repo: Repository<CrudEntity>,
+    protected readonly entityRepository: Repository<CrudEntity>,
     private eventEmitter: EventEmitter2,
   ) {}
+
   async create(newEntity: T): Promise<T> {
-    try {
-      const entity = this.repo.create(newEntity);
-      const savedEntity = this.repo.save(entity) as Promise<T>;
-      this.eventEmitter.emit('entity.created', await savedEntity);
-      return await savedEntity;
-    } catch (err) {
-      throw new Error(err);
-    }
+    const createdEntity = this.entityRepository.create(newEntity);
+    const savedEntity = (await this.entityRepository.save(createdEntity)) as T;
+    this.eventEmitter.emit('entity.created', savedEntity);
+    return savedEntity;
   }
+
   async findAll(
     skip?: number,
     take?: number,
     relations?: string[],
   ): Promise<T[]> {
-    try {
-      const all = await this.repo.find({
-        order: { id: 'ASC' },
-        skip,
-        take,
-        relations,
-      });
-      console.log('all', all);
-      return all as unknown as Promise<T[]>;
-    } catch (err) {
-      console.log('err', err);
-      throw new Error(err);
-    }
+    return (await this.entityRepository.find({
+      order: { id: 'ASC' },
+      skip,
+      take,
+      relations,
+    })) as T[];
   }
-  findActive(skip?: number, take?: number, relations?: string[]): Promise<T[]> {
-    try {
-      return this.repo.find({
-        where: { isActive: true },
-        order: { id: 'ASC' },
-        skip,
-        take,
-        relations,
-      }) as Promise<T[]>;
-    } catch (err) {
-      throw new Error(err);
-    }
+
+  async findActive(
+    skip?: number,
+    take?: number,
+    relations?: string[],
+  ): Promise<T[]> {
+    return (await this.entityRepository.find({
+      where: { isActive: true },
+      order: { id: 'ASC' },
+      skip,
+      take,
+      relations,
+    })) as T[];
   }
-  findOne(id: number): Promise<T> {
-    try {
-      return this.repo.findOne({ where: { id: Equal(id) } }) as Promise<T>;
-    } catch (err) {
-      throw new Error(err);
-    }
+
+  async findOne(id: number): Promise<T> {
+    return (await this.entityRepository.findOne({
+      where: { id: Equal(id) },
+    })) as T;
   }
+
   async update(id: number, updatedEntity: Partial<Omit<T, 'id'>>): Promise<T> {
-    const entity = await this.repo.findOne({
+    const existingEntity = await this.entityRepository.findOne({
       where: { id: Equal(id) },
     });
 
-    Object.assign(entity, updatedEntity);
+    Object.assign(existingEntity, updatedEntity);
 
-    const savedEntity = this.repo.save(entity) as Promise<T>;
-    this.eventEmitter.emit('entity.updated', await savedEntity);
-    return await savedEntity;
+    const savedEntity = (await this.entityRepository.save(existingEntity)) as T;
+    this.eventEmitter.emit('entity.updated', savedEntity);
+    return savedEntity;
   }
+
   async softRemove(id: number): Promise<T> {
-    const entity = await this.repo.findOne({
+    const existingEntity = await this.entityRepository.findOne({
       where: { id: Equal(id) },
     });
 
-    Object.assign(entity, { isActive: false });
+    Object.assign(existingEntity, { isActive: false });
 
-    const softRemovedEntity = this.repo.save(entity) as Promise<T>;
-    return await softRemovedEntity;
+    const softRemovedEntity = (await this.entityRepository.save(
+      existingEntity,
+    )) as T;
+    return softRemovedEntity;
   }
+
   async restore(id: number): Promise<T> {
-    const entity = await this.repo.findOne({
+    const existingEntity = await this.entityRepository.findOne({
       where: { id: Equal(id) },
     });
 
-    Object.assign(entity, { isActive: true });
-    const restoredEntity = this.repo.save(entity) as Promise<T>;
-    return await restoredEntity;
+    Object.assign(existingEntity, { isActive: true });
+    const restoredEntity = (await this.entityRepository.save(
+      existingEntity,
+    )) as T;
+    return restoredEntity;
   }
 
   async remove(id: number) {
-    const removedEntity = await this.repo.delete(id);
+    const removedEntity = await this.entityRepository.delete(id);
     this.eventEmitter.emit('entity.deleted', removedEntity);
     return removedEntity;
   }

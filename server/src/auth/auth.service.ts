@@ -52,6 +52,7 @@ export class AuthService {
     }
 
     console.log(provider, user);
+
     if (
       provider === 'local' &&
       employee &&
@@ -62,32 +63,31 @@ export class AuthService {
       const { password, salt, ...result } = employee;
       return { ...result, provider };
     }
-    if (provider === 'impersonate' && user) {
-      console.log('impersonate auth');
 
-      const { password, salt, ...result } = user;
-      return { ...result, isTwoFactorAuthenticated: true, provider };
-    }
-    if (
-      provider === 'local' &&
-      user &&
-      user.password &&
-      (await user.validatePassword(password))
-    ) {
-      console.log('lokalna auth');
-      const { password, salt, ...result } = user;
-      return { ...result, provider };
-    }
-    if (provider !== 'local' && user) {
-      console.log(`${provider} auth`);
+    if (user) {
+      if (provider === 'impersonate') {
+        console.log('impersonate auth');
+        const { password, salt, ...result } = user;
+        return { ...result, isTwoFactorAuthenticated: true, provider };
+      }
 
-      const { password, salt, ...result } = user;
-      return { ...result, provider };
-    }
+      if (
+        provider === 'local' &&
+        user.password &&
+        (await user.validatePassword(password))
+      ) {
+        console.log('lokalna auth');
+        const { password, salt, ...result } = user;
+        return { ...result, provider };
+      }
 
-    if (provider !== 'local') {
+      if (provider !== 'local') {
+        console.log(`${provider} auth`);
+        const { password, salt, ...result } = user;
+        return { ...result, provider };
+      }
+    } else if (provider !== 'local') {
       console.log(`${provider} new user`);
-
       const newUser = new UserEntity();
       newUser.email = email;
       newUser.externalProvider = true;
@@ -96,41 +96,55 @@ export class AuthService {
     }
 
     console.log('no auth');
-
     return null;
   }
 
   async logOut(req, res) {
-    req.logOut(function (err) {
+    req.logOut((err) => {
       if (err) {
-        return err;
+        console.error(err);
+        res.status(500).send('Error logging out');
+        return;
       }
-      // req.session.destroy;
+      req.session.destroy((err) => {
+        if (err) {
+          console.error(err);
+          res.status(500).send('Error destroying session');
+          return;
+        }
+        res.redirect(`${this.clientURL}`);
+      });
     });
-    // req.session.cookie.maxAge = 0;
-    res.redirect(`${this.clientURL}`);
-
-    req.session.destroy;
   }
 
   async logOutImpersonateUser(req, res) {
-    req.session.passport.user = req.user.originalUser;
-    console.log('client url', process.env.NODE_ENV);
-    res.redirect(`${this.clientURL}`);
+    try {
+      req.session.passport.user = req.user.originalUser;
+      console.log('client url', process.env.NODE_ENV);
+      res.redirect(`${this.clientURL}`);
+    } catch (error) {
+      console.error('Error in logOutImpersonateUser:', error);
+      res.status(500).send('Error logging out impersonated user');
+    }
   }
 
   async otherLogIn(req, res) {
-    console.log('client url', process.env.NODE_ENV);
+    try {
+      console.log('client url', process.env.NODE_ENV);
 
-    if (!req.user) {
-      return console.log('No user');
+      if (!req.user) {
+        console.log('No user');
+        return;
+      }
+
+      const redirectUrl = req.user.isTwoFactorAuthenticationEnabled
+        ? `${this.clientURL}/2fa`
+        : `${this.clientURL}`;
+      await res.redirect(redirectUrl);
+    } catch (error) {
+      console.error('Error in otherLogIn:', error);
+      res.status(500).send('Error during login');
     }
-    if (req.user.isTwoFactorAuthenticationEnabled) {
-      await res.redirect(`${this.clientURL}/2fa`);
-      return;
-    }
-    await res.redirect(`${this.clientURL}`);
-    return;
   }
 
   async generateTwoFactorAuthenticationSecret(user: UserEntity) {
@@ -163,12 +177,6 @@ export class AuthService {
     twoFactorAuthenticationCode: string,
     user: UserEntity,
   ) {
-    console.log(
-      'code 2',
-      twoFactorAuthenticationCode,
-      user.twoFactorAuthenticationSecret,
-    );
-
     return authenticator.verify({
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthenticationSecret,
@@ -180,22 +188,23 @@ export class AuthService {
     newPassword1: string,
     newPassword2: string,
     req,
-    // res,
   ) {
     const { email } = req.user;
-    console.log('be reset pass', email, password, newPassword1, newPassword2);
+
     const user = await this.usersService.findByEmail(email);
 
-    let updatedUser: UserEntity;
-    if (
-      (await user.validatePassword(password)) &&
-      newPassword1 === newPassword2
-    ) {
-      updatedUser = await this.usersService.update(user.id, {
-        password: newPassword1,
-      });
-      return updatedUser;
+    if (!(await user.validatePassword(password))) {
+      throw new Error('Invalid current password');
     }
-    throw new Error('There is problem with reseting password');
+
+    if (newPassword1 !== newPassword2) {
+      throw new Error('New passwords do not match');
+    }
+
+    const updatedUser = await this.usersService.update(user.id, {
+      password: newPassword1,
+    });
+
+    return updatedUser;
   }
 }

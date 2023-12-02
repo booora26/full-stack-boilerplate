@@ -31,7 +31,6 @@ export class CrudController<T extends CrudEntity> {
   @UseInterceptors(ClassSerializerInterceptor)
   @Public()
   @Get()
-  // @UseGuards(DinamicPermissionGuard)
   async findAll(
     @Query('skip') skip?: number | null,
     @Query('take') take?: number | null,
@@ -43,9 +42,9 @@ export class CrudController<T extends CrudEntity> {
       throw new BadGatewayException(err);
     }
   }
+
   @UseInterceptors(ClassSerializerInterceptor)
   @Get('active')
-  // @UseGuards(DinamicPermissionGuard)
   async findActive(
     @Query('skip') skip?: number | null,
     @Query('take') take?: number | null,
@@ -70,7 +69,6 @@ export class CrudController<T extends CrudEntity> {
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateBaseDto: T) {
-    console.log('patch', id, updateBaseDto);
     try {
       return await this.service.update(+id, updateBaseDto);
     } catch (err) {

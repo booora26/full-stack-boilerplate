@@ -1,11 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinTable,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-} from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
 import { CrudEntity } from '../crud/crud.entity';
 import { AppointementStatus } from './appointement-status.enum';
 import { EmployeeEntity } from '../employees/employee.entity';
