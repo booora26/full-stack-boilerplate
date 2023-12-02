@@ -1,4 +1,4 @@
-import { BeforeInsert, Column, Entity, ManyToOne } from 'typeorm';
+import { AfterInsert, AfterUpdate, BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne } from 'typeorm';
 import { CrudEntity } from '../crud/crud.entity';
 import { ShopEntity } from '../shop/shop.entity';
 
@@ -12,43 +12,40 @@ export class ShiftEntity extends CrudEntity {
   startTime: string;
   @Column()
   endTime: string;
-  @Column()
+  @Column({ default: 30 })
   slotDuration: number;
-  @Column({ type: 'simple-array' })
+  @Column({ type: 'simple-array', nullable: true })
   slots: string[];
 
   @BeforeInsert()
+  @BeforeUpdate()
+  /**
+   * Generates time slots based on the start time, end time, and slot duration.
+   */
   async generateSlots() {
-    const startTime = this.startTime.split(':');
-    const endTime = this.endTime.split(':');
-    const startHoure = parseInt(startTime[0]);
-    const startMinute = parseInt(startTime[1]);
-    const endHoure = parseInt(endTime[0]);
-    const endMinute = parseInt(endTime[1]);
-    const startTimeAsDate = new Date(2023, 1, 1, startHoure, startMinute, 0);
-    const endTimeAsDate = new Date(2023, 1, 1, endHoure, endMinute, 0);
+    const [startHour, startMinute] = this.startTime.split(':').map(Number);
+    const [endHour, endMinute] = this.endTime.split(':').map(Number);
+
+    const startTimeInMinutes = startHour * 60 + startMinute;
+    const endTimeInMinutes = endHour * 60 + endMinute;
+
+    // Get slotDuration from the shop
+    const slotDuration = this.slotDuration;
+    console.log('slotDuration', slotDuration);
 
     const slots = [];
 
-    slots.push(this.startTime);
-
-    for (let i = startTimeAsDate; i < endTimeAsDate; ) {
-      i = new Date(i.getTime() + this.slotDuration * 60000);
-      if (i < endTimeAsDate) {
-        let houre;
-        let minute;
-        i.getHours() < 10
-          ? (houre = `0${i.getHours()}`)
-          : (houre = i.getHours());
-        i.getMinutes() < 10
-          ? (minute = `0${i.getMinutes()}`)
-          : (minute = i.getMinutes());
-        const slot = `${houre}:${minute}`;
-
-        slots.push(slot);
-      }
+    for (let i = startTimeInMinutes; i < endTimeInMinutes; i += slotDuration) {
+      const hour = Math.floor(i / 60);
+      const minute = i % 60;
+      const slot = `${hour.toString().padStart(2, '0')}:${minute
+        .toString()
+        .padStart(2, '0')}`;
+      slots.push(slot);
     }
 
     this.slots = slots;
+
+    console.log('slots', slots);
   }
 }

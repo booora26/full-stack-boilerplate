@@ -43,8 +43,6 @@ export class RatesService extends CrudService<RateEntity> {
       });
     }
 
-    console.log('rate', rate, date, employeeId, shopId);
-
     return rate;
   }
 }

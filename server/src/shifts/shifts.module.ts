@@ -4,9 +4,10 @@ import { ShiftsController } from './shifts.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ShiftEntity } from './shift.entity';
 import { ShiftMiddleware } from './middlewars/shift/shift.middleware';
+import { ShopModule } from '../shop/shop.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ShiftEntity])],
+  imports: [TypeOrmModule.forFeature([ShiftEntity]), ShopModule],
   controllers: [ShiftsController],
   providers: [ShiftsService],
   exports: [ShiftsService],

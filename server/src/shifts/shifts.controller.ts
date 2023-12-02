@@ -1,4 +1,14 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ShiftsService } from './shifts.service';
 import { ShiftEntity } from './shift.entity';
 import { CrudController } from '../crud/crud.controller';
@@ -13,5 +23,24 @@ export class ShiftsController extends CrudController<ShiftEntity> {
   async getShiftsByShop(@Param('shopId') shopId: number) {
     const shifts = await this.service.getShiftsByShop(shopId);
     return shifts;
+  }
+  @Post()
+  async createShift(@Body() shiftData: Partial<ShiftEntity>) {
+    const shift = await this.service.createShift(shiftData);
+    return shift;
+  }
+
+  @Patch(':id')
+  async updateShift(
+    @Param('id') id: number,
+    @Body() shiftData: Partial<ShiftEntity>,
+  ) {
+    if (!shiftData.shop || !shiftData.shop.id) {
+      throw new BadRequestException('Shop is missing in request body');
+    }
+
+    console.log('updateShift', id, shiftData);
+    const shift = await this.service.updateShift(id, shiftData);
+    return shift;
   }
 }

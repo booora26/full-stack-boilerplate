@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Query } from '@nestjs/common';
 import { RatesService } from './rates.service';
 import { RateEntity } from './rate.entity';
 import { CrudController } from '../crud/crud.controller';
@@ -13,9 +13,19 @@ export class RatesController extends CrudController<RateEntity> {
   async findLatestRate(
     @Body('employeeId') employeeId: number,
     @Body('shopId') shopId: number,
-    @Body('validFrom') date: Date,
+    @Body('validFrom') date: string,
   ) {
-    console.log('rate', employeeId, shopId, date);
-    return this.service.findLatestRate(employeeId, shopId, date);
+    if (!employeeId || !shopId || !date) {
+      throw new BadRequestException(
+        'employeeId, shopId, and validFrom are required',
+      );
+    }
+
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      throw new BadRequestException('Invalid date format');
+    }
+
+    return this.service.findLatestRate(employeeId, shopId, parsedDate);
   }
 }

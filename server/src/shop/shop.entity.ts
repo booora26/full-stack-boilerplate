@@ -13,6 +13,8 @@ export class ShopEntity extends CrudEntity {
   @Column()
   displayName: string;
   @Column({ nullable: true })
+  slotDuration: number;
+  @Column({ nullable: true })
   country: string;
   @Column({ nullable: true })
   city: string;

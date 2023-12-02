@@ -9,6 +9,7 @@ import { ServicesService } from '../services/services.service';
 import { AppointementStatus } from './appointement-status.enum';
 import { UserEntity } from '../users/entities/user.entity';
 import { ServiceEntity } from '../services/service.entity';
+import { ShopService } from '../shop/shop.service';
 
 @Injectable()
 export class AppointmentService extends CrudService<AppointmentEntity> {
@@ -17,6 +18,7 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
     protected repo: Repository<AppointmentEntity>,
     protected eventEmmiter: EventEmitter2,
     private shiftService: ShiftsService,
+    private shopService: ShopService,
     private servicesService: ServicesService,
   ) {
     super(repo, eventEmmiter);
@@ -59,7 +61,8 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
       })
       .getMany();
 
-    const slotDuration = 30;
+    const shop = await this.shopService.findOne(shopId);
+    const slotDuration = shop.slotDuration;
     const service = await this.servicesService.findOne(serviceId);
     const serviceSlots = Math.max(
       1,
