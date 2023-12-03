@@ -12,8 +12,8 @@ export class ServiceEntity extends CrudEntity {
   duration: number;
   @ManyToOne(() => ShopEntity, (shop) => shop.services)
   shop: ShopEntity;
-  @OneToMany(() => RateEntity, (rates) => rates.service)
-  rates: RateEntity[];
+  // @OneToMany(() => RateEntity, (rate) => rate.service)
+  // rates: RateEntity[];
 
   @ManyToMany(() => EmployeeEntity, (employee) => employee.services)
   employees: EmployeeEntity[];
