@@ -16,21 +16,30 @@ export class RatesService extends CrudService<RateEntity> {
     super(repo, eventEmmiter);
   }
   async findRate(date: Date, employeeId: number, shopId: number): Promise<any> {
-    let rate = await this.repo
-      .createQueryBuilder('rate')
-      .select(['rate.employeeId', 'rate.validFrom', 'rate.currency', 'rate.prices'])
-      .where('rate.validFrom <= :date', { date })
-      .andWhere(new Brackets(qb => {
-        qb.where('rate.employeeId = :employeeId', { employeeId })
-          .orWhere('rate.employeeId IS NULL AND rate.shopId = :shopId', { shopId });
-      }))
-      .orderBy({
-        'rate.employeeId': 'ASC', // null values will be at the end
-        'rate.validFrom': 'DESC'
-      })
-      .getOne();
+    try {
+      let rate = await this.repo
+        .createQueryBuilder('rate')
+        .select(['rate.employeeId', 'rate.validFrom', 'rate.currency', 'rate.prices'])
+        .where('rate.validFrom <= :date', { date })
+        .andWhere(new Brackets(qb => {
+          qb.where('rate.employeeId = :employeeId', { employeeId })
+            .orWhere('rate.employeeId IS NULL AND rate.shopId = :shopId', { shopId });
+        }))
+        .orderBy({
+          'rate.employeeId': 'ASC', // null values will be at the end
+          'rate.validFrom': 'DESC'
+        })
+        .getOne();
 
-    return rate;
+      if (!rate) {
+        throw new Error('Rate not found');
+      }
+
+      return rate;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
   }
 

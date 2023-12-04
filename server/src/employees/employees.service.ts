@@ -26,26 +26,38 @@ export class EmployeesService extends CrudService<EmployeeEntity> {
     return employee;
   }
 
-  async getEmployeeServicesWithRates(employeeId: number, shopId: number, date: Date): Promise<any> {
-    const rates = await this.ratesService.findRate(date, employeeId, shopId);
+  async getEmployeeServicesWithRates(employeeId: number, date: Date): Promise<any> {
+    try {
+      const employee = await this.repo.findOne({ where: { id: employeeId }, relations: ['services'] });
 
-    const employee = await this.repo.findOne({ where: { id: employeeId }, relations: ['services'] });
+      if (!employee) {
+        throw new Error('Employee not found');
+      }
 
-    if (!employee) {
-      throw new Error('Employee not found');
+      const ratesPromise = this.ratesService.findRate(date, employeeId, employee.shopId);
+      const serviceRatesPromise = employee.services.map(async service => {
+        const rates = await ratesPromise;
+        const serviceRate = rates.prices.find(rate => rate.serviceId === service.id);
+        if (!serviceRate) {
+          throw new Error(`Rate not found for service ${service.id}`);
+        }
+        return {
+          serviceName: service.name,
+          serviceDuration: service.duration,
+          rate: serviceRate.value,
+          currency: rates.currency
+        };
+      });
+
+      const [rates, serviceRates] = await Promise.all([ratesPromise, Promise.all(serviceRatesPromise)]);
+
+      const rateType = rates.employeeId ? 'employee' : 'shop';
+
+      return {employeeName: employee.name, validFrom: rates.validFrom, rateType, serviceRates};
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
-
-    console.log('serv', employee.services, rates);
-
-    const serviceRates = employee.services.map(service => ({
-      serviceName: service.name,
-      rate: rates.prices.find(rate => rate.serviceId === service.id)?.value,
-      currency: rates.currency
-    }));
-
-    const rateType = rates.employeeId ? 'employee' : 'shop';
-
-    return {employeeName: employee.name, validFrom: rates.validFrom, rateType, serviceRates};
   }
 
 

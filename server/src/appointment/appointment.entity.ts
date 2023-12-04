@@ -10,8 +10,12 @@ import { ServiceEntity } from '../services/service.entity';
 export class AppointmentEntity extends CrudEntity {
   @ManyToOne(() => ShopEntity, (shop) => shop.appointments)
   shop: ShopEntity;
+  @Column()
+  shopId: number;
   @ManyToOne(() => EmployeeEntity, (employee) => employee.appointements)
   employee: EmployeeEntity;
+  @Column({ nullable: true})
+  employeeId: number;
   @ManyToOne(() => ServiceEntity)
   service?: ServiceEntity;
   @Column({ nullable: true })

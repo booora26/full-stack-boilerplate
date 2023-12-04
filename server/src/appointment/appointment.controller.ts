@@ -5,7 +5,6 @@ import { AppointmentEntity } from './appointment.entity';
 import { ShopEntity } from '../shop/shop.entity';
 import { EmployeeEntity } from '../employees/employee.entity';
 import { ServiceEntity } from '../services/service.entity';
-import { UserEntity } from '../users/entities/user.entity';
 
 @Controller('appointment')
 export class AppointmentController extends CrudController<AppointmentEntity> {
@@ -31,12 +30,12 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
   }
   @Get('free-by-time')
   async freeSlotsByTime(
-    @Body('shopId') shop: ShopEntity,
+    @Body('shopId') shopId: number,
     @Body('slot') slot: string,
     @Body('date') date: Date,
   ) {
     const freeSlots = await this.service.getAvailableSlotsByTime(
-      shop.id,
+      shopId,
       slot,
       date,
     );
@@ -45,13 +44,13 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
   }
   @Get('booked-by-emp')
   async bookedSlotsByEmployee(
-    @Body('shopId') shop: ShopEntity,
-    @Body('employeeId') employee: EmployeeEntity,
+    @Body('shopId') shopId: number,
+    @Body('employeeId') employeeId: number,
     @Body('date') date: Date,
   ) {
     const bookedSlots = await this.service.getBookedSlotsByEmployee(
-      shop.id,
-      employee.id,
+      shopId,
+      employeeId,
       date,
     );
 

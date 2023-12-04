@@ -61,9 +61,12 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
       })
       .getMany();
 
-    const shop = await this.shopService.findOne(shopId);
+    const [shop, service] = await Promise.all([
+      this.shopService.findOne(shopId),
+      this.servicesService.findOne(serviceId),
+    ]);
+
     const slotDuration = shop.slotDuration;
-    const service = await this.servicesService.findOne(serviceId);
     const serviceSlots = Math.max(
       1,
       Math.ceil(service.duration / slotDuration),
@@ -74,9 +77,12 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
     const freeCurrentServiceSlots = freeSlots.filter((slot) => {
       const start = slot.slotNumber;
       const stop = start + serviceSlots - 1;
-      const range: number[] = this.arrayRange(start, stop, 1);
-
-      return this.isInRange(range, fs);
+      for (let i = start; i <= stop; i++) {
+        if (!fs.has(i)) {
+          return false;
+        }
+      }
+      return true;
     });
 
     return { freeCurrentServiceSlots, serviceSlots };
@@ -89,24 +95,24 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
    * @returns {Promise<Appointment[]>} - A promise that resolves to an array of free slots.
    */
   async getAvailableSlotsByTime(shopId, timeSlot, selectedDate) {
-    const availableSlots = await this.repo
-      .createQueryBuilder('appointment')
-      .select([
-        'appointment.slot',
-        'appointment.id',
-        'appointment.employeeId',
-        'appointment.slotNumber',
-      ])
-      .where('appointment.shopId = :shopId', { shopId })
-      .andWhere('appointment.slot = :slot', { slot: timeSlot })
-      .andWhere('appointment.date = :date', { date: selectedDate })
-      .andWhere('appointment.status = :status', {
-        status: AppointementStatus.AVAILABLE,
-      })
-      .getMany();
+      const availableSlots = await this.repo
+        .createQueryBuilder('appointment')
+        .select([
+          'appointment.slot',
+          'appointment.id',
+          'appointment.employeeId',
+          'appointment.slotNumber',
+        ])
+        .where({
+          shopId: shopId,
+          slot: timeSlot,
+          date: selectedDate,
+          status: AppointementStatus.AVAILABLE
+        })
+        .getMany();
 
-    return availableSlots;
-  }
+      return availableSlots;
+    }
 
   /**
    * Retrieves the booked slots for a specific employee on a selected date.
@@ -116,19 +122,19 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
    * @returns A Promise that resolves to an array of booked slots.
    */
   async getBookedSlotsByEmployee(shopId, employeeId, selectedDate) {
-    const bookedSlots = await this.repo
-      .createQueryBuilder('appointment')
-      .select(['appointment.slot', 'appointment.id', 'appointment.slotNumber'])
-      .where('appointment.shopId = :shopId', { shopId })
-      .andWhere('appointment.employeeId = :employeeId', { employeeId })
-      .andWhere('appointment.date = :date', { date: selectedDate })
-      .andWhere('appointment.status = :status', {
-        status: AppointementStatus.BOOKED,
-      })
-      .getMany();
+      const bookedSlots = await this.repo
+        .createQueryBuilder('appointment')
+        .select(['appointment.slot', 'appointment.id', 'appointment.slotNumber'])
+        .where({
+          shopId: shopId,
+          employeeId: employeeId,
+          date: selectedDate,
+          status: AppointementStatus.BOOKED
+        })
+        .getMany();
 
-    return bookedSlots;
-  }
+      return bookedSlots;
+    }
 
   /**
    * Generates appointment slots based on the provided schedule data.
@@ -136,8 +142,8 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
    * @returns A promise that resolves to the saved appointment slots.
    */
   async generateAllSlots(scheduleData) {
-    const { shop, dates: scheduleDates } = scheduleData;
-    const shopShifts = await this.shiftService.getShiftsByShop(shop.id);
+    const { shopId, dates: scheduleDates } = scheduleData;
+    const shopShifts = await this.shiftService.getShiftsByShop(shopId);
 
     const appointmentSlots = scheduleDates.flatMap((scheduleDateItem) => {
       const appointmentDate = scheduleDateItem.date;
@@ -148,7 +154,7 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
         );
         return matchingShift.slots.map((timeSlot, index) => ({
           slot: timeSlot,
-          shop,
+          shopId: shopId,
           date: appointmentDate,
           employee: assignedEmployee,
           slotNumber: index + 1,
@@ -169,26 +175,26 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
    * @returns The updated appointment entities if the booking was successful, otherwise undefined.
    */
   async bookFreeSlots(
-    id: number,
-    serviceSlots: number,
-    user: UserEntity,
-    service: ServiceEntity,
-  ) {
-    const ids = Array.from({ length: serviceSlots }, (_, i) => id + i);
+      id: number,
+      serviceSlots: number,
+      user: UserEntity,
+      service: ServiceEntity,
+    ) {
+      const ids = Array.from({ length: serviceSlots }, (_, i) => id + i);
 
-    const updateResult = await this.repo
-      .createQueryBuilder()
-      .update(AppointmentEntity)
-      .set({ status: AppointementStatus.BOOKED, user, service })
-      .where('id IN (:...ids)', { ids })
-      .andWhere('status = :status', {
-        status: AppointementStatus.AVAILABLE,
-      })
-      .returning('*')
-      .execute();
+      const updateResult = await this.repo
+        .createQueryBuilder()
+        .update(AppointmentEntity)
+        .set({ status: AppointementStatus.BOOKED, user, service })
+        .where({
+          id: In(ids),
+          status: AppointementStatus.AVAILABLE
+        })
+        .returning('*')
+        .execute();
 
-    if (updateResult.affected >= serviceSlots) {
-      return updateResult.raw;
+      if (updateResult.affected >= serviceSlots) {
+        return updateResult.raw;
+      }
     }
-  }
 }

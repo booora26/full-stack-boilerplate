@@ -23,10 +23,10 @@ export class ShopEntity extends CrudEntity {
   @OneToMany(() => ShiftEntity, (shift) => shift.shop, { eager: true })
   @JoinColumn()
   shifts: ShiftEntity[];
-  @OneToMany(() => ServiceEntity, (service) => service.shop, { eager: true })
+  @OneToMany(() => ServiceEntity, (service) => service.shop)
   @JoinColumn()
   services: ServiceEntity[];
-  @OneToMany(() => RateEntity, (rate) => rate.shop, { eager: true })
+  @OneToMany(() => RateEntity, (rate) => rate.shop)
   rates: RateEntity[];
   @OneToMany(() => EmployeeEntity, (employee) => employee.shop, { eager: true })
   employees: EmployeeEntity[];

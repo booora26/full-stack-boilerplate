@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpException, HttpStatus, Param, Post } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { EmployeeEntity } from './employee.entity';
 import { CrudController } from '../crud/crud.controller';
@@ -16,19 +16,24 @@ export class EmployeesController extends CrudController<EmployeeEntity> {
 @Get(':id/services')
 async getEmployeeServicesWithRates(
   @Param('id', ParseIntPipe) employeeId: number,
-  @Body() body: { shopId: number, date: string }
+  @Body('date') date: string 
 ) {
-  if (!employeeId || !body.shopId || !body.date) {
-    throw new BadRequestException(
-      'employeeId, shopId, and date are required',
-    );
-  }
+  try {
+    if (!employeeId  || !date) {
+      throw new BadRequestException(
+        'employeeId and date are required',
+      );
+    }
 
-  const parsedDate = new Date(body.date);
-  if (isNaN(parsedDate.getTime())) {
-    throw new BadRequestException('Invalid date format');
-  }
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      throw new BadRequestException('Invalid date format');
+    }
 
-  return this.service.getEmployeeServicesWithRates(employeeId, body.shopId, parsedDate);
+    return await this.service.getEmployeeServicesWithRates(employeeId, parsedDate);
+  } catch (error) {
+    console.error(error);
+    throw new HttpException('An error occurred while getting services with rates', HttpStatus.INTERNAL_SERVER_ERROR);
+  }
 }
 }
