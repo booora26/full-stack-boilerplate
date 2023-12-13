@@ -13,10 +13,9 @@ interface Price {
 export class RateEntity extends CrudEntity {
   @Column({type: 'jsonb', nullable: true})
   prices: Price[];
-
   @Column({ type: 'enum', enum: CurrencyEnum, default: CurrencyEnum.RSD })
   currency: CurrencyEnum;
-  @Column({name: 'valid_from'})
+  @Column({name: 'valid_from', nullable: true})
   validFrom: Date;
   @ManyToOne(() => EmployeeEntity, (employee) => employee.rates)
   employee: EmployeeEntity;
