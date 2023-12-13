@@ -11,7 +11,7 @@ interface Price {
 
 @Entity({ name: 'rates' })
 export class RateEntity extends CrudEntity {
-  @Column({type: 'jsonb'})
+  @Column({type: 'jsonb', nullable: true})
   prices: Price[];
 
   @Column({ type: 'enum', enum: CurrencyEnum, default: CurrencyEnum.RSD })
