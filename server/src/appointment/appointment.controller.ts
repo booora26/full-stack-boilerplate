@@ -1,4 +1,4 @@
-import { Body, Controller, Get, ParseIntPipe, Patch } from '@nestjs/common';
+import { Body, Controller, Get, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
 import { CrudController } from '../crud/crud.controller';
 import { AppointmentEntity } from './appointment.entity';
@@ -12,7 +12,7 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
     super(service);
   }
 
-  @Get('free-by-emp')
+  @Post('free-by-emp')
   async freeSlotsByEmployee(
     @Body('shop') shop: ShopEntity,
     @Body('employee') employee: EmployeeEntity,
