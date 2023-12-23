@@ -13,7 +13,7 @@ export const getFreeAppointmentByEmployee = async () => {
     myHeaders.append("Content-Type", "application/json");
 
     const response = await fetch(`${serverURL}/appointment/free-by-emp`, {method: 'POST',     headers: myHeaders,
-    credentials: 'include', body: JSON.stringify({shop: {"id": 1}, employee: {"id": 11}, date: '2023-12-01', service: {"id": 5}})});
+    credentials: 'include', body: JSON.stringify({shop: {"id": 1}, employee: {"id": 1}, date: '2023-12-01', service: {"id": 1}})});
     const status = await response.json();
   
     return status;
