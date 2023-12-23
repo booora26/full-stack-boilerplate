@@ -1,5 +1,5 @@
 import { Button, Flex, Space } from "antd";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 // import { logOut } from "../api/auth";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
@@ -7,6 +7,7 @@ import { Spending } from "../components/Spending";
 import { BP } from "../components/BP";
 import { Campaign } from "../components/Campaign";
 import { CLIENT_DEV_URL, CLIENT_PROD_URL, SERVER_DEV_URL, SERVER_PROD_URL } from "../constants";
+import { getFreeAppointmentByEmployee } from "../api/appointements";
 
 const serverURL =
 process.env.NODE_ENV === 'DEVELOPMENT'
@@ -23,6 +24,11 @@ export default function DashboardPage() {
   // const exit = async () => {
   //   const res = await logOut()
   // }
+
+  useEffect(() => {
+    const getFA = async () => getFreeAppointmentByEmployee()
+    getFA();
+  })
 
   console.log('serverURL', serverURL)
   console.log('clientURL', clientURL)
