@@ -32,7 +32,7 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
 
     return freeSlots;
   }
-  @Get('free-by-time')
+  @Post('free-by-time')
   async freeSlotsByTime(
     @Body('shopId') shopId: number,
     @Body('slot') slot: string,
@@ -46,7 +46,7 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
 
     return freeSlots;
   }
-  @Get('booked-by-emp')
+  @Post('booked-by-emp')
   async bookedSlotsByEmployee(
     @Body('shopId') shopId: number,
     @Body('employeeId') employeeId: number,
@@ -61,7 +61,7 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
     return bookedSlots;
   }
 
-  @Get('generate')
+  @Post('generate')
   async generatAllSlots(@Body() schedule) {
     console.log(schedule);
     const allSlots = await this.service.generateAllSlots(schedule);

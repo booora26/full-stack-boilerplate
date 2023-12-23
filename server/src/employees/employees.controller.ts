@@ -13,7 +13,7 @@ export class EmployeesController extends CrudController<EmployeeEntity> {
 
 
 
-@Get(':id/services')
+@Post(':id/services')
 async getEmployeeServicesWithRates(
   @Param('id', ParseIntPipe) employeeId: number,
   @Body('date') date: string 
