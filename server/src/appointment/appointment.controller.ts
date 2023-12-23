@@ -28,6 +28,8 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
       service.id,
     );
 
+    console.log('freeSlots', freeSlots);
+
     return freeSlots;
   }
   @Get('free-by-time')
