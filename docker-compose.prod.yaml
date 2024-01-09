@@ -27,6 +27,7 @@ services:
       - PGUSER=postgres
       - PGPASSWORD=123
       - PGDATABASE=db
+      - SESS_COOKIE_MAX_AGE=43200
   client:
     image: booora26/booking:client
     # volumes:
