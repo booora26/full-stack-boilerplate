@@ -15,6 +15,7 @@ import { ServicesModule } from './services/services.module';
 import { ShopModule } from './shop/shop.module';
 import { RatesModule } from './rates/rates.module';
 import { EmployeesModule } from './employees/employees.module';
+import { BillModule } from './bill/bill.module';
 import * as redisStore from 'cache-manager-ioredis';
 
 const ROUTES = [...AUTHZ_ROUTES];
@@ -67,6 +68,7 @@ const ROUTES = [...AUTHZ_ROUTES];
     ShopModule,
     RatesModule,
     EmployeesModule,
+    BillModule,
   ],
   controllers: [],
   providers: [],
