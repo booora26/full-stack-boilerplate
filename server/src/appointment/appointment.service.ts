@@ -10,6 +10,9 @@ import { AppointementStatus } from './appointement-status.enum';
 import { UserEntity } from '../users/entities/user.entity';
 import { ServiceEntity } from '../services/service.entity';
 import { ShopService } from '../shop/shop.service';
+import { AuthService } from '../auth/auth.service';
+import { fr } from '@faker-js/faker';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AppointmentService extends CrudService<AppointmentEntity> {
@@ -20,9 +23,15 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
     private shiftService: ShiftsService,
     private shopService: ShopService,
     private servicesService: ServicesService,
+    private readonly configService: ConfigService,
   ) {
     super(repo, eventEmmiter);
   }
+
+  serverURL =
+    this.configService.get('NODE_ENV') === 'DEVELOPMENT'
+      ? this.configService.get('SERVER_LOCAL_URL')
+      : this.configService.get('SERVER_WEB_URL');
   /**
    * Generates an array of numbers within a specified range.
    *
@@ -85,6 +94,11 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
       return true;
     });
 
+    freeCurrentServiceSlots.map((slot) => {
+      slot.uri = `${this.serverURL}/appointment/bookV2?id=${slot.id}&serviceSlots=${serviceSlots}&serviceId=${serviceId}`;
+      slot.method = 'PATCH';
+    });
+
     return { freeCurrentServiceSlots, serviceSlots };
   }
   /**
@@ -95,24 +109,24 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
    * @returns {Promise<Appointment[]>} - A promise that resolves to an array of free slots.
    */
   async getAvailableSlotsByTime(shopId, timeSlot, selectedDate) {
-      const availableSlots = await this.repo
-        .createQueryBuilder('appointment')
-        .select([
-          'appointment.slot',
-          'appointment.id',
-          'appointment.employeeId',
-          'appointment.slotNumber',
-        ])
-        .where({
-          shopId: shopId,
-          slot: timeSlot,
-          date: selectedDate,
-          status: AppointementStatus.AVAILABLE
-        })
-        .getMany();
+    const availableSlots = await this.repo
+      .createQueryBuilder('appointment')
+      .select([
+        'appointment.slot',
+        'appointment.id',
+        'appointment.employeeId',
+        'appointment.slotNumber',
+      ])
+      .where({
+        shopId: shopId,
+        slot: timeSlot,
+        date: selectedDate,
+        status: AppointementStatus.AVAILABLE,
+      })
+      .getMany();
 
-      return availableSlots;
-    }
+    return availableSlots;
+  }
 
   /**
    * Retrieves the booked slots for a specific employee on a selected date.
@@ -122,19 +136,19 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
    * @returns A Promise that resolves to an array of booked slots.
    */
   async getBookedSlotsByEmployee(shopId, employeeId, selectedDate) {
-      const bookedSlots = await this.repo
-        .createQueryBuilder('appointment')
-        .select(['appointment.slot', 'appointment.id', 'appointment.slotNumber'])
-        .where({
-          shopId: shopId,
-          employeeId: employeeId,
-          date: selectedDate,
-          status: AppointementStatus.BOOKED
-        })
-        .getMany();
+    const bookedSlots = await this.repo
+      .createQueryBuilder('appointment')
+      .select(['appointment.slot', 'appointment.id', 'appointment.slotNumber'])
+      .where({
+        shopId: shopId,
+        employeeId: employeeId,
+        date: selectedDate,
+        status: AppointementStatus.BOOKED,
+      })
+      .getMany();
 
-      return bookedSlots;
-    }
+    return bookedSlots;
+  }
 
   /**
    * Generates appointment slots based on the provided schedule data.
@@ -175,26 +189,26 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
    * @returns The updated appointment entities if the booking was successful, otherwise undefined.
    */
   async bookFreeSlots(
-      id: number,
-      serviceSlots: number,
-      user: UserEntity,
-      service: ServiceEntity,
-    ) {
-      const ids = Array.from({ length: serviceSlots }, (_, i) => id + i);
+    id: number,
+    serviceSlots: number,
+    user: UserEntity,
+    service: ServiceEntity,
+  ) {
+    const ids = Array.from({ length: serviceSlots }, (_, i) => id + i);
 
-      const updateResult = await this.repo
-        .createQueryBuilder()
-        .update(AppointmentEntity)
-        .set({ status: AppointementStatus.BOOKED, user, service })
-        .where({
-          id: In(ids),
-          status: AppointementStatus.AVAILABLE
-        })
-        .returning('*')
-        .execute();
+    const updateResult = await this.repo
+      .createQueryBuilder()
+      .update(AppointmentEntity)
+      .set({ status: AppointementStatus.BOOKED, user, service })
+      .where({
+        id: In(ids),
+        status: AppointementStatus.AVAILABLE,
+      })
+      .returning('*')
+      .execute();
 
-      if (updateResult.affected >= serviceSlots) {
-        return updateResult.raw;
-      }
+    if (updateResult.affected >= serviceSlots) {
+      return updateResult.raw;
     }
+  }
 }

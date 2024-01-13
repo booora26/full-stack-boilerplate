@@ -14,7 +14,7 @@ export class AppointmentEntity extends CrudEntity {
   shopId: number;
   @ManyToOne(() => EmployeeEntity, (employee) => employee.appointements)
   employee: EmployeeEntity;
-  @Column({ nullable: true})
+  @Column({ nullable: true })
   employeeId: number;
   @ManyToOne(() => ServiceEntity)
   service?: ServiceEntity;
@@ -36,4 +36,8 @@ export class AppointmentEntity extends CrudEntity {
     default: AppointementStatus.AVAILABLE,
   })
   status: AppointementStatus;
+  @Column({ nullable: true })
+  uri: string;
+  @Column({ nullable: true })
+  method: string;
 }

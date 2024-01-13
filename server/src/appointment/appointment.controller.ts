@@ -1,10 +1,20 @@
-import { Body, Controller, Get, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
 import { CrudController } from '../crud/crud.controller';
 import { AppointmentEntity } from './appointment.entity';
 import { ShopEntity } from '../shop/shop.entity';
 import { EmployeeEntity } from '../employees/employee.entity';
 import { ServiceEntity } from '../services/service.entity';
+import { UserEntity } from '../users/entities/user.entity';
 
 @Controller('appointment')
 export class AppointmentController extends CrudController<AppointmentEntity> {
@@ -75,6 +85,24 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
     @Body('user') user,
     @Body('service') service,
   ) {
+    const res = this.service.bookFreeSlots(id, serviceSlots, user, service);
+
+    return res;
+  }
+  @Patch('bookV2')
+  async bookFreeSlotsV2(
+    @Req() req,
+    @Query('id', ParseIntPipe) id: number,
+    @Query('serviceSlots', ParseIntPipe) serviceSlots: number,
+    // @Query('userId') userId,
+    @Query('serviceId') serviceId,
+  ) {
+    // const user = new UserEntity();
+    const user = req.user;
+    console.log('user', user);
+    // user.id = userId;
+    const service = new ServiceEntity();
+    service.id = serviceId;
     const res = this.service.bookFreeSlots(id, serviceSlots, user, service);
 
     return res;

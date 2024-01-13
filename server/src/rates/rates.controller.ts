@@ -1,4 +1,11 @@
-import { BadRequestException, Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { RatesService } from './rates.service';
 import { RateEntity } from './rate.entity';
 import { CrudController } from '../crud/crud.controller';
@@ -10,8 +17,11 @@ export class RatesController extends CrudController<RateEntity> {
   }
 
   @Post('find-rate')
-  async findRate(@Body('date') date: Date, @Body('employeeId') employeeId: number, @Body('shopId') shopId: number) {
+  async findRate(
+    @Body('date') date: Date,
+    @Body('employeeId') employeeId: number,
+    @Body('shopId') shopId: number,
+  ) {
     return this.service.findRate(date, employeeId, shopId);
   }
-
 }

@@ -17,17 +17,26 @@ export class RatesService extends CrudService<RateEntity> {
   }
   async findRate(date: Date, employeeId: number, shopId: number): Promise<any> {
     try {
-      let rate = await this.repo
+      const rate = await this.repo
         .createQueryBuilder('rate')
-        .select(['rate.employeeId', 'rate.validFrom', 'rate.currency', 'rate.prices'])
+        .select([
+          'rate.employeeId',
+          'rate.validFrom',
+          'rate.currency',
+          'rate.prices',
+        ])
         .where('rate.validFrom <= :date', { date })
-        .andWhere(new Brackets(qb => {
-          qb.where('rate.employeeId = :employeeId', { employeeId })
-            .orWhere('rate.employeeId IS NULL AND rate.shopId = :shopId', { shopId });
-        }))
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where('rate.employeeId = :employeeId', { employeeId }).orWhere(
+              'rate.employeeId IS NULL AND rate.shopId = :shopId',
+              { shopId },
+            );
+          }),
+        )
         .orderBy({
           'rate.employeeId': 'ASC', // null values will be at the end
-          'rate.validFrom': 'DESC'
+          'rate.validFrom': 'DESC',
         })
         .getOne();
 
@@ -41,5 +50,4 @@ export class RatesService extends CrudService<RateEntity> {
       throw error;
     }
   }
-  }
-
+}
