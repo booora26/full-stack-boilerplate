@@ -25,12 +25,23 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
     skip?: number,
     take?: number,
     relations?: string,
+    filters?: Record<string, string>,
   ): Promise<T[]> {
-    console.log(fields, relations);
+    console.log(fields, relations, filters);
     let separatedFields;
     fields ? (separatedFields = fields.split(',')) : {};
     let separatedRelations;
     relations ? (separatedRelations = relations.split(',')) : {};
+
+    const selectedFilters = {};
+    Object.entries(filters).forEach(([field, value]) => {
+      Object.assign(selectedFilters, { [field]: value });
+    });
+
+    const keysToRemove = ['fields', 'skip', 'take', 'relations'];
+    keysToRemove.forEach((k) => delete selectedFilters[k]);
+
+    console.log(selectedFilters);
 
     return (await this.entityRepository.find({
       select: separatedFields,
@@ -43,6 +54,7 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       //   relations: separatedRelations,
       //   disableMixedMap: false,
       // },
+      where: selectedFilters,
     })) as T[];
   }
 

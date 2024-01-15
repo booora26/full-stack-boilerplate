@@ -37,10 +37,10 @@ export class CrudController<T extends CrudEntity> {
     @Query('skip') skip?: number | null,
     @Query('take') take?: number | null,
     @Query('relations') relations?: string,
+    @Query() filters?: Record<string, string>,
   ) {
     try {
-
-      return await this.service.findAll(fields, skip, take, relations);
+      return await this.service.findAll(fields, skip, take, relations, filters);
     } catch (err) {
       throw new BadGatewayException(err);
     }
