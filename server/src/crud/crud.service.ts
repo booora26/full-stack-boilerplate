@@ -38,7 +38,11 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       skip,
       take,
       relations: separatedRelations,
-      // loadRelationIds: true,
+      loadRelationIds: !separatedRelations,
+      // || {
+      //   relations: separatedRelations,
+      //   disableMixedMap: false,
+      // },
     })) as T[];
   }
 
