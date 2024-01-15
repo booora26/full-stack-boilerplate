@@ -65,6 +65,31 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
     return savedEntity;
   }
 
+  async update2(id: number, updatedEntity: T): Promise<T> {
+    const existingEntity = await this.entityRepository.findOne({
+      where: { id: Equal(id) },
+    });
+
+    console.log('up', updatedEntity, id);
+
+    if (!existingEntity) {
+      const newEntity = this.entityRepository.create({
+        ...updatedEntity,
+        id,
+      }) as T;
+      console.log(newEntity);
+      const savedEntity = await this.entityRepository.save(newEntity);
+      this.eventEmitter.emit('entity.updated', savedEntity);
+      return savedEntity;
+    }
+
+    Object.assign(existingEntity, updatedEntity);
+
+    const savedEntity = (await this.entityRepository.save(existingEntity)) as T;
+    this.eventEmitter.emit('entity.updated', savedEntity);
+    return savedEntity;
+  }
+
   async softRemove(id: number): Promise<T> {
     const existingEntity = await this.entityRepository.findOne({
       where: { id: Equal(id) },

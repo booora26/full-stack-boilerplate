@@ -2,9 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { PDFDocument } from 'pdf-lib';
 import { writeFile, readFile } from 'fs/promises';
 import { PaymentSlip } from './payment-slip.interface';
+import { Repository } from 'typeorm';
+import { BillEntity } from './bill.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class BillService {
+  constructor(
+    @InjectRepository(BillEntity) private repo: Repository<BillEntity>,
+  ) {}
+
+  async findAll() {
+    return await this.repo.find();
+  }
   async fillForm(paymentSlip: PaymentSlip) {
     const {
       payer,
@@ -91,7 +101,14 @@ export class BillService {
 
     const pdfBytes = await pdfDoc.save();
 
-    await writeFile(`./src/bill/storage/${referenceNumber}.pdf`, pdfBytes);
+    const fileName = `./src/bill/storage/${referenceNumber}.pdf`;
+
+    await writeFile(fileName, pdfBytes);
+
+    const bill = new BillEntity();
+    bill.id = referenceNumber;
+    bill.location = fileName;
+    return await this.repo.save(bill);
   }
 
   async generateNBSQR(paymentSlip: PaymentSlip) {

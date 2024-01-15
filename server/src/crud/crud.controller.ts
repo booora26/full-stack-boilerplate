@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   UseInterceptors,
 } from '@nestjs/common';
@@ -75,8 +76,16 @@ export class CrudController<T extends CrudEntity> {
       throw new BadGatewayException(err);
     }
   }
+  @Put(':id')
+  async update2(@Param('id') id: string, @Body() updateBaseDto: T) {
+    try {
+      return await this.service.update2(+id, updateBaseDto);
+    } catch (err) {
+      throw new BadGatewayException(err);
+    }
+  }
 
-  @Delete(':id')
+  @Post(':id/soft-remove')
   async softRemove(@Param('id') id: string) {
     try {
       return await this.service.softRemove(+id);
@@ -85,7 +94,7 @@ export class CrudController<T extends CrudEntity> {
     }
   }
 
-  @Post(':id')
+  @Post(':id/restore')
   async restore(@Param('id') id: string) {
     try {
       return await this.service.restore(+id);
@@ -94,7 +103,7 @@ export class CrudController<T extends CrudEntity> {
     }
   }
 
-  @Delete(':id/hard')
+  @Delete(':id')
   async remove(@Param('id') id: string) {
     try {
       return await this.service.remove(+id);

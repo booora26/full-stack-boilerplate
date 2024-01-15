@@ -1,9 +1,21 @@
-import { Controller, Get, Param, Inject, Body, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Inject,
+  Body,
+  Patch,
+  Headers,
+  Res,
+  Req,
+} from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ShopService } from './shop.service';
 import { ShopEntity } from './shop.entity';
 import { CrudController } from '../crud/crud.controller';
+import { Request, Response } from 'express';
+import { Public } from '../auth/decotators/public.decorator';
 
 @Controller('shop')
 export class ShopController extends CrudController<ShopEntity> {
@@ -14,6 +26,7 @@ export class ShopController extends CrudController<ShopEntity> {
     super(service);
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<ShopEntity> {
     const cacheKey = `shop_${id}`;

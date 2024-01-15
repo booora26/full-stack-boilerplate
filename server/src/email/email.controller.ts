@@ -1,5 +1,14 @@
-import { Body, Controller, Get } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Header,
+  Headers,
+  Options,
+  Res,
+} from '@nestjs/common';
 import { EmailService } from './email.service';
+import { Response } from 'express';
 
 @Controller('email')
 export class EmailController {
@@ -53,6 +62,43 @@ export class EmailController {
         email,
       );
       return { message: 'Email sent successfully', result };
+    } catch (error) {
+      return { message: 'Error sending email', error };
+    }
+  }
+  @Get('event-generate')
+  async generateCalendarEvent(@Res() res: Response, @Body() body) {
+    try {
+      const {
+        startTime,
+        endTime,
+        summary,
+        description,
+        location,
+        url,
+        name,
+        email,
+      } = body;
+
+      const result = await this.emailService.generateCalendarEvent(
+        startTime,
+        endTime,
+        summary,
+        description,
+        location,
+        url,
+        name,
+        email,
+      );
+      res.header(
+        'Content-Type',
+        'text/calendar; charset=utf-8; method=REQUEST; name=invite.ics',
+      );
+      res.header(
+        'Content-Disposition',
+        `attachment; filename=${summary.replaceAll(' ', '-')}.ics`,
+      );
+      res.send(result.toString());
     } catch (error) {
       return { message: 'Error sending email', error };
     }
