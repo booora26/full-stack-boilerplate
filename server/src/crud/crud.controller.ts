@@ -33,12 +33,14 @@ export class CrudController<T extends CrudEntity> {
   @Public()
   @Get()
   async findAll(
+    @Query('fields') fields?: string | null,
     @Query('skip') skip?: number | null,
     @Query('take') take?: number | null,
-    @Query('relations') relations?: string[],
+    @Query('relations') relations?: string,
   ) {
     try {
-      return await this.service.findAll(skip, take, relations);
+
+      return await this.service.findAll(fields, skip, take, relations);
     } catch (err) {
       throw new BadGatewayException(err);
     }
@@ -47,12 +49,19 @@ export class CrudController<T extends CrudEntity> {
   @UseInterceptors(ClassSerializerInterceptor)
   @Get('active')
   async findActive(
+    @Query('fields') fields?: string,
     @Query('skip') skip?: number | null,
     @Query('take') take?: number | null,
     @Query('relations') relations?: string[],
   ) {
     try {
-      return await this.service.findActive(skip, take, relations);
+      const selectedFields = fields.split(',');
+      return await this.service.findActive(
+        selectedFields,
+        skip,
+        take,
+        relations,
+      );
     } catch (err) {
       throw new BadGatewayException(err);
     }

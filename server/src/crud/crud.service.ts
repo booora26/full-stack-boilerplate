@@ -21,19 +21,29 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
   }
 
   async findAll(
+    fields?: string,
     skip?: number,
     take?: number,
-    relations?: string[],
+    relations?: string,
   ): Promise<T[]> {
+    console.log(fields, relations);
+    let separatedFields;
+    fields ? (separatedFields = fields.split(',')) : {};
+    let separatedRelations;
+    relations ? (separatedRelations = relations.split(',')) : {};
+
     return (await this.entityRepository.find({
+      select: separatedFields,
       order: { id: 'ASC' },
       skip,
       take,
-      relations,
+      relations: separatedRelations,
+      // loadRelationIds: true,
     })) as T[];
   }
 
   async findActive(
+    fields?: string[],
     skip?: number,
     take?: number,
     relations?: string[],

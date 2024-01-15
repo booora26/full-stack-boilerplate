@@ -20,7 +20,7 @@ export class ShopEntity extends CrudEntity {
   city: string;
   @Column({ nullable: true })
   address: string;
-  @OneToMany(() => ShiftEntity, (shift) => shift.shop, { eager: true })
+  @OneToMany(() => ShiftEntity, (shift) => shift.shop)
   @JoinColumn()
   shifts: ShiftEntity[];
   @OneToMany(() => ServiceEntity, (service) => service.shop)
@@ -28,7 +28,7 @@ export class ShopEntity extends CrudEntity {
   services: ServiceEntity[];
   @OneToMany(() => RateEntity, (rate) => rate.shop)
   rates: RateEntity[];
-  @OneToMany(() => EmployeeEntity, (employee) => employee.shop, { eager: true })
+  @OneToMany(() => EmployeeEntity, (employee) => employee.shop)
   employees: EmployeeEntity[];
   @OneToMany(() => AppointmentEntity, (appointement) => appointement.shop)
   appointments: AppointmentEntity[];

@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { SlotService } from './slot.service';
 import { CreateSlotDto } from './dto/create-slot.dto';
@@ -25,8 +26,8 @@ export class SlotController {
   }
 
   @Get()
-  findAll() {
-    return this.slotService.findAll();
+  findAll(@Query('fields') fields: string) {
+    return this.slotService.findAll(fields);
   }
 
   @Get(':id')

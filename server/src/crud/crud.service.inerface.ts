@@ -1,10 +1,12 @@
 export interface ICrudService<T> {
   findAll(
+    fields?: string,
     skip?: number,
     take?: number | null,
-    relations?: string[],
+    relations?: string,
   ): Promise<T[]>;
   findActive(
+    fields?: string[],
     skip?: number,
     take?: number | null,
     relations?: string[],
