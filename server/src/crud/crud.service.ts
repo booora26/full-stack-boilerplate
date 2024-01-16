@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Equal } from 'typeorm';
+import { Repository, Equal, Like, ILike } from 'typeorm';
 import { CrudEntity } from './crud.entity';
 import { ICrudService } from './crud.service.inerface';
 
@@ -26,6 +26,7 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
     take?: number,
     relations?: string,
     filters?: Record<string, string>,
+    s?: string,
   ): Promise<T[]> {
     console.log(fields, relations, filters);
     let separatedFields;
@@ -35,11 +36,16 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
 
     const selectedFilters = {};
     Object.entries(filters).forEach(([field, value]) => {
-      Object.assign(selectedFilters, { [field]: value });
+      Object.assign(selectedFilters, { [field]: ILike(`%${value}%`) });
     });
 
     const keysToRemove = ['fields', 'skip', 'take', 'relations'];
     keysToRemove.forEach((k) => delete selectedFilters[k]);
+
+    console.log(selectedFilters);
+
+    // selectedFilters['slot'] = Like('%16%');
+    // selectedFilters['status'] = ILike('%avai%');
 
     console.log(selectedFilters);
 

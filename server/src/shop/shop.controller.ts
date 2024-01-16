@@ -48,4 +48,9 @@ export class ShopController extends CrudController<ShopEntity> {
     await this.cacheManager.del(cacheKey);
     return updatedShop;
   }
+
+  @Get('search/:keyword')
+  async search(@Param('keyword') keyword: string) {
+    return await this.service.search(keyword);
+  }
 }

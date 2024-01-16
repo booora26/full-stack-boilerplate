@@ -10,7 +10,7 @@ import { AppointmentEntity } from '../appointment/appointment.entity';
 export class ShopEntity extends CrudEntity {
   @Column()
   name: string;
-  @Column()
+  @Column({ name: 'display_name' })
   displayName: string;
   @Column({ nullable: true })
   slotDuration: number;
