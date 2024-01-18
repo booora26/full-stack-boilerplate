@@ -17,9 +17,7 @@ import { CrudEntity } from '../crud/crud.entity';
 export class EmployeeEntity extends UserEntity {
   @Column()
   name: string;
-  @ManyToMany(() => ServiceEntity, (service) => service.employees, {
-    eager: true,
-  })
+  @ManyToMany(() => ServiceEntity, (service) => service.employees)
   @JoinTable()
   services: ServiceEntity[];
   @OneToMany(() => AppointmentEntity, (appointement) => appointement.employee)

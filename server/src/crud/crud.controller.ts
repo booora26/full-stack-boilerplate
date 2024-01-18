@@ -5,12 +5,15 @@ import {
   Controller,
   Delete,
   Get,
+  HostParam,
   Param,
   Patch,
   Post,
   Put,
   Query,
   UseInterceptors,
+  Headers,
+  Req,
 } from '@nestjs/common';
 import { CrudEntity } from './crud.entity';
 import { CrudService } from './crud.service';
@@ -32,15 +35,43 @@ export class CrudController<T extends CrudEntity> {
   @UseInterceptors(ClassSerializerInterceptor)
   @Public()
   @Get()
-  async findAll(
-    @Query('fields') fields?: string | null,
-    @Query('skip') skip?: number | null,
-    @Query('take') take?: number | null,
-    @Query('relations') relations?: string,
-    @Query() filters?: Record<string, string>,
-  ) {
+  async findAll(@Req() req) {
     try {
-      return await this.service.findAll(fields, skip, take, relations, filters);
+      console.log('url', req);
+
+      const result = await this.service.findAll(req);
+
+      const data = result[0];
+      const count = result[1];
+
+      console.log('broj', count);
+      const currentPageURI = `${req.protocol}://${req.headers.host}${req.url}`;
+      const { page, limit } = req.query;
+      const nextPage = Number(page) + 1;
+      const previousPage = Number(page) - 1;
+      const lastPage = (count / limit).toFixed(0);
+
+      const nextPageURI = currentPageURI.replace(
+        `&page=${page}`,
+        `&page=${nextPage}`,
+      );
+      const previousPageURI = currentPageURI.replace(
+        `&page=${page}`,
+        `&page=${previousPage}`,
+      );
+      const lastPageURI = currentPageURI.replace(
+        `&page=${page}`,
+        `&page=${lastPage}`,
+      );
+
+      return {
+        data,
+        pagnation: {
+          next: nextPageURI,
+          previous: previousPageURI,
+          last: lastPageURI,
+        },
+      };
     } catch (err) {
       throw new BadGatewayException(err);
     }

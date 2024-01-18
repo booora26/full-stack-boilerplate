@@ -20,48 +20,54 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
     return savedEntity;
   }
 
-  async findAll(
-    fields?: string,
-    skip?: number,
-    take?: number,
-    relations?: string,
-    filters?: Record<string, string>,
-    s?: string,
-  ): Promise<T[]> {
-    console.log(fields, relations, filters);
-    let separatedFields;
-    fields ? (separatedFields = fields.split(',')) : {};
-    let separatedRelations;
-    relations ? (separatedRelations = relations.split(',')) : {};
+  async findAll(req): Promise<[T[], number]> {
+    const { fields, page, limit, relations, order, ...filters } = req.query;
+
+    console.log(fields, relations, 'filters', filters);
+    let selectedFields;
+    fields ? (selectedFields = fields.split(',')) : {};
+    let selectedRelations;
+    relations ? (selectedRelations = relations.split(',')) : {};
 
     const selectedFilters = {};
     Object.entries(filters).forEach(([field, value]) => {
       Object.assign(selectedFilters, { [field]: ILike(`%${value}%`) });
     });
 
-    const keysToRemove = ['fields', 'skip', 'take', 'relations'];
-    keysToRemove.forEach((k) => delete selectedFilters[k]);
+    const selectedOrder = {};
+    if (order) {
+      order.split(',').forEach((o) => {
+        const i = o.split('_');
+        Object.assign(selectedOrder, { [i[0]]: i[1].toUpperCase() });
+      });
+    }
 
-    console.log(selectedFilters);
+    let take: number | null;
+    limit ? (take = limit) : take;
+    let skip: number | null;
+    page ? (skip = (page - 1) * limit) : skip;
 
-    // selectedFilters['slot'] = Like('%16%');
-    // selectedFilters['status'] = ILike('%avai%');
+    console.log('s i t', page, limit);
 
-    console.log(selectedFilters);
+    console.log('order', selectedOrder);
+    console.log('relations', selectedRelations);
 
-    return (await this.entityRepository.find({
-      select: separatedFields,
-      order: { id: 'ASC' },
+    console.log(selectedFields);
+    console.log('sf', selectedFilters);
+
+    return (await this.entityRepository.findAndCount({
+      select: selectedFields,
+      order: selectedOrder,
       skip,
       take,
-      relations: separatedRelations,
-      loadRelationIds: !separatedRelations,
+      relations: selectedRelations,
+      loadRelationIds: !selectedRelations,
       // || {
       //   relations: separatedRelations,
       //   disableMixedMap: false,
       // },
       where: selectedFilters,
-    })) as T[];
+    })) as [T[], number];
   }
 
   async findActive(
