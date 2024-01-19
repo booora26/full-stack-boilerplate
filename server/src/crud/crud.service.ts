@@ -31,13 +31,14 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
 
     const selectedFilters = {};
     Object.entries(filters).forEach(([field, value]) => {
-      Object.assign(selectedFilters, { [field]: ILike(`%${value}%`) });
+      // Object.assign(selectedFilters, { [field]: ILike(`%${value}%`) });
+      Object.assign(selectedFilters, { [field]: value });
     });
 
     const selectedOrder = {};
     if (order) {
       order.split(',').forEach((o) => {
-        const i = o.split('_');
+        const i = o.split(':');
         Object.assign(selectedOrder, { [i[0]]: i[1].toUpperCase() });
       });
     }

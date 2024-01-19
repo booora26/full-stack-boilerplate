@@ -14,19 +14,28 @@ import {
   UseInterceptors,
   Headers,
   Req,
+  Res,
 } from '@nestjs/common';
 import { CrudEntity } from './crud.entity';
 import { CrudService } from './crud.service';
 import { Public } from '../auth/decotators/public.decorator';
+import { Response } from 'express';
 
 @Controller()
 export class CrudController<T extends CrudEntity> {
   constructor(protected readonly service: CrudService<T>) {}
 
   @Post()
-  async create(@Body() createBaseDto: T) {
+  async create(
+    @Body() createBaseDto: T,
+    @Req() req,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     try {
-      return await this.service.create(createBaseDto);
+      const result = await this.service.create(createBaseDto);
+      const location = req.url;
+      res.set('Location', `${location}/${result.id}`);
+      return result;
     } catch (err) {
       throw new BadGatewayException(err);
     }
@@ -35,7 +44,7 @@ export class CrudController<T extends CrudEntity> {
   @UseInterceptors(ClassSerializerInterceptor)
   @Public()
   @Get()
-  async findAll(@Req() req) {
+  async findAll(@Req() req, @Res({ passthrough: true }) res: Response) {
     try {
       console.log('url', req);
 
@@ -49,7 +58,7 @@ export class CrudController<T extends CrudEntity> {
       const { page, limit } = req.query;
       const nextPage = Number(page) + 1;
       const previousPage = Number(page) - 1;
-      const lastPage = (count / limit).toFixed(0);
+      const lastPage = Number((count / limit).toFixed(0));
 
       const nextPageURI = currentPageURI.replace(
         `&page=${page}`,
@@ -63,15 +72,17 @@ export class CrudController<T extends CrudEntity> {
         `&page=${page}`,
         `&page=${lastPage}`,
       );
+      const firstPageURI = currentPageURI.replace(`&page=${page}`, `&page=1`);
 
-      return {
-        data,
-        pagnation: {
-          next: nextPageURI,
-          previous: previousPageURI,
-          last: lastPageURI,
-        },
-      };
+      res.header({
+        Link: `<${nextPageURI}>;rel=next,<${previousPageURI}>;rel=prev,<${lastPageURI}>;rel=last,<${firstPageURI}>;rel=first`,
+        'Pagination-Count': lastPage > 0 ? lastPage : 1,
+        'Pagination-Page': page,
+        'Pagination-Limit': limit,
+        'X-Total-Count': count,
+      });
+
+      return data;
     } catch (err) {
       throw new BadGatewayException(err);
     }
