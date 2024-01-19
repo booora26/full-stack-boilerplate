@@ -46,7 +46,7 @@ export class CrudController<T extends CrudEntity> {
   @Get()
   async findAll(@Req() req, @Res({ passthrough: true }) res: Response) {
     try {
-      console.log('url', req);
+      console.log('url', req.headers);
 
       const result = await this.service.findAll(req);
 

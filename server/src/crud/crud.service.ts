@@ -4,6 +4,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Equal, Like, ILike } from 'typeorm';
 import { CrudEntity } from './crud.entity';
 import { ICrudService } from './crud.service.inerface';
+import {
+  getSelectedFields,
+  getSelectedFilters,
+  getSelectedOrder,
+  getSelectedPagnation,
+  getSelectedRelations,
+} from './crud.helpers';
 
 @Injectable()
 export class CrudService<T extends CrudEntity> implements ICrudService<T> {
@@ -21,40 +28,19 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
   }
 
   async findAll(req): Promise<[T[], number]> {
-    const { fields, page, limit, relations, order, ...filters } = req.query;
+    const { fields, page, limit, relations, order, filters } = req.query;
 
-    console.log(fields, relations, 'filters', filters);
-    let selectedFields;
-    fields ? (selectedFields = fields.split(',')) : {};
-    let selectedRelations;
-    relations ? (selectedRelations = relations.split(',')) : {};
+    const selectedFields = getSelectedFields(fields);
+    const selectedRelations = getSelectedRelations(relations);
+    const selectedOrder = getSelectedOrder(order);
+    const { take, skip } = getSelectedPagnation(page, limit);
+    const selectedFilters = getSelectedFilters(filters);
 
-    const selectedFilters = {};
-    Object.entries(filters).forEach(([field, value]) => {
-      // Object.assign(selectedFilters, { [field]: ILike(`%${value}%`) });
-      Object.assign(selectedFilters, { [field]: value });
-    });
-
-    const selectedOrder = {};
-    if (order) {
-      order.split(',').forEach((o) => {
-        const i = o.split(':');
-        Object.assign(selectedOrder, { [i[0]]: i[1].toUpperCase() });
-      });
-    }
-
-    let take: number | null;
-    limit ? (take = limit) : take;
-    let skip: number | null;
-    page ? (skip = (page - 1) * limit) : skip;
-
-    console.log('s i t', page, limit);
-
-    console.log('order', selectedOrder);
-    console.log('relations', selectedRelations);
-
-    console.log(selectedFields);
-    console.log('sf', selectedFilters);
+    // const selectedFilters = {};
+    // Object.entries(filters).forEach(([field, value]) => {
+    //   // Object.assign(selectedFilters, { [field]: ILike(`%${value}%`) });
+    //   Object.assign(selectedFilters, { [field]: value });
+    // });
 
     return (await this.entityRepository.findAndCount({
       select: selectedFields,
