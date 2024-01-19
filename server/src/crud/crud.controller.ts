@@ -61,21 +61,31 @@ export class CrudController<T extends CrudEntity> {
       const lastPage = Number((count / limit).toFixed(0));
 
       const nextPageURI = currentPageURI.replace(
-        `&page=${page}`,
-        `&page=${nextPage}`,
+        `page=${page}`,
+        `page=${nextPage}`,
       );
+      console.log('next', nextPageURI, nextPage, currentPageURI);
       const previousPageURI = currentPageURI.replace(
-        `&page=${page}`,
-        `&page=${previousPage}`,
+        `page=${page}`,
+        `page=${previousPage}`,
       );
       const lastPageURI = currentPageURI.replace(
-        `&page=${page}`,
-        `&page=${lastPage}`,
+        `page=${page}`,
+        `page=${lastPage}`,
       );
-      const firstPageURI = currentPageURI.replace(`&page=${page}`, `&page=1`);
+      const firstPageURI = currentPageURI.replace(`page=${page}`, `page=1`);
+
+      const headerLinks = [
+        `<${firstPageURI}>;rel=first`,
+        `<${lastPageURI}>;rel=last`,
+      ];
+
+      nextPage < lastPage ? headerLinks.push(`<${nextPageURI}>;rel=next`) : '';
+      previousPage > 0 ? headerLinks.push(`<${previousPageURI}>;rel=prev`) : '';
 
       res.header({
-        Link: `<${nextPageURI}>;rel=next,<${previousPageURI}>;rel=prev,<${lastPageURI}>;rel=last,<${firstPageURI}>;rel=first`,
+        Link: headerLinks.join(','),
+        // Link: `<${nextPageURI}>;rel=next,<${previousPageURI}>;rel=prev,<${lastPageURI}>;rel=last,<${firstPageURI}>;rel=first`,
         'Pagination-Count': lastPage > 0 ? lastPage : 1,
         'Pagination-Page': page,
         'Pagination-Limit': limit,
