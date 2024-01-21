@@ -73,40 +73,25 @@ export const getSelectedFilters = (filters: string) => {
   filters.split(';').forEach((f) => {
     validateFilterParams(f);
     const i = f.split(':');
-    selectedFilters.hasOwnProperty(i[0])
-      ? console.log(selectedFilters[i[0]])
-      : '';
+    let field;
     const previousFilter = selectedFilters[i[0]];
-    if (i[1] == FilterRule.IS_NULL)
-      Object.assign(selectedFilters, { [i[0]]: IsNull() });
-    if (i[1] == FilterRule.IS_NOT_NULL)
-      Object.assign(selectedFilters, { [i[0]]: Not(IsNull()) });
-    if (i[1] == FilterRule.EQUALS)
-      Object.assign(selectedFilters, { [i[0]]: i[2] });
-    if (i[1] == FilterRule.NOT_EQUALS)
-      Object.assign(selectedFilters, { [i[0]]: Not(i[2]) });
-    if (i[1] == FilterRule.GREATER_THAN)
-      Object.assign(selectedFilters, {
-        [i[0]]: MoreThan(i[2]),
-      });
+    if (i[1] == FilterRule.IS_NULL) field = IsNull();
+    if (i[1] == FilterRule.IS_NOT_NULL) field = Not(IsNull());
+    if (i[1] == FilterRule.EQUALS) field = i[2];
+    if (i[1] == FilterRule.NOT_EQUALS) field = Not(i[2]);
+    if (i[1] == FilterRule.GREATER_THAN) field = MoreThan(i[2]);
     if (i[1] == FilterRule.GREATER_THAN_OR_EQUALS)
-      Object.assign(selectedFilters, { [i[0]]: MoreThanOrEqual(i[2]) });
-    if (i[1] == FilterRule.LESS_THAN)
-      Object.assign(selectedFilters, {
-        [i[0]]: LessThan(i[2]),
-      });
-    if (i[1] == FilterRule.LESS_THAN_OR_EQUALS)
-      Object.assign(selectedFilters, { [i[0]]: LessThanOrEqual(i[2]) });
-    if (i[1] == FilterRule.LIKE)
-      Object.assign(selectedFilters, { [i[0]]: ILike(`%${i[2]}%`) });
-    if (i[1] == FilterRule.NOT_LIKE)
-      Object.assign(selectedFilters, { [i[0]]: Not(ILike(`%${i[2]}%`)) });
-    if (i[1] == FilterRule.IN)
-      Object.assign(selectedFilters, { [i[0]]: In(i[2].split(',')) });
-    if (i[1] == FilterRule.NOT_IN)
-      Object.assign(selectedFilters, { [i[0]]: Not(In(i[2].split(','))) });
+      field = MoreThanOrEqual(i[2]);
+    if (i[1] == FilterRule.LESS_THAN) field = LessThan(i[2]);
+    if (i[1] == FilterRule.LESS_THAN_OR_EQUALS) field = LessThanOrEqual(i[2]);
+    if (i[1] == FilterRule.LIKE) field = ILike(`%${i[2]}%`);
+    if (i[1] == FilterRule.NOT_LIKE) field = Not(ILike(`%${i[2]}%`));
+    if (i[1] == FilterRule.IN) field = In(i[2].split(','));
+    if (i[1] == FilterRule.NOT_IN) field = Not(In(i[2].split(',')));
 
-    console.log(selectedFilters[i[0]]);
+    selectedFilters.hasOwnProperty(i[0])
+      ? Object.assign(selectedFilters, { [i[0]]: And(previousFilter, field) })
+      : Object.assign(selectedFilters, { [i[0]]: field });
   });
   return selectedFilters;
 };
