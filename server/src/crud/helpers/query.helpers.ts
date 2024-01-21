@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import {
+  And,
   ILike,
   In,
   IsNull,
@@ -68,10 +69,14 @@ export const getSelectedFilters = (filters: string) => {
       throw new BadRequestException('Invalid filter parameter');
     }
   };
-  const selectedFilters = {};
+  const selectedFilters = new Object();
   filters.split(';').forEach((f) => {
     validateFilterParams(f);
     const i = f.split(':');
+    selectedFilters.hasOwnProperty(i[0])
+      ? console.log(selectedFilters[i[0]])
+      : '';
+    const previousFilter = selectedFilters[i[0]];
     if (i[1] == FilterRule.IS_NULL)
       Object.assign(selectedFilters, { [i[0]]: IsNull() });
     if (i[1] == FilterRule.IS_NOT_NULL)
@@ -81,11 +86,15 @@ export const getSelectedFilters = (filters: string) => {
     if (i[1] == FilterRule.NOT_EQUALS)
       Object.assign(selectedFilters, { [i[0]]: Not(i[2]) });
     if (i[1] == FilterRule.GREATER_THAN)
-      Object.assign(selectedFilters, { [i[0]]: MoreThan(i[2]) });
+      Object.assign(selectedFilters, {
+        [i[0]]: MoreThan(i[2]),
+      });
     if (i[1] == FilterRule.GREATER_THAN_OR_EQUALS)
       Object.assign(selectedFilters, { [i[0]]: MoreThanOrEqual(i[2]) });
     if (i[1] == FilterRule.LESS_THAN)
-      Object.assign(selectedFilters, { [i[0]]: LessThan(i[2]) });
+      Object.assign(selectedFilters, {
+        [i[0]]: LessThan(i[2]),
+      });
     if (i[1] == FilterRule.LESS_THAN_OR_EQUALS)
       Object.assign(selectedFilters, { [i[0]]: LessThanOrEqual(i[2]) });
     if (i[1] == FilterRule.LIKE)
@@ -96,6 +105,8 @@ export const getSelectedFilters = (filters: string) => {
       Object.assign(selectedFilters, { [i[0]]: In(i[2].split(',')) });
     if (i[1] == FilterRule.NOT_IN)
       Object.assign(selectedFilters, { [i[0]]: Not(In(i[2].split(','))) });
+
+    console.log(selectedFilters[i[0]]);
   });
   return selectedFilters;
 };

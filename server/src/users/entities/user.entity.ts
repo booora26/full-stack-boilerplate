@@ -11,13 +11,16 @@ import { CrudEntity } from '../../crud/crud.entity';
 import { RoleEntity } from '../../authz/roles/role.entity';
 import { UserRole } from '../user-roles.enum';
 import { AppointmentEntity } from '../../appointment/appointment.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'users' })
 export class UserEntity extends CrudEntity {
   @Column({ unique: true })
   email: string;
+  @Exclude()
   @Column({ nullable: true })
   password?: string;
+  @Exclude()
   @Column({ nullable: true })
   salt?: string;
   @Column({ nullable: true })
@@ -27,9 +30,10 @@ export class UserEntity extends CrudEntity {
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   role: UserRole;
 
+  @Exclude()
   @Column({ nullable: true })
   twoFactorAuthenticationSecret?: string;
-
+  @Exclude()
   @Column({ default: false })
   isTwoFactorAuthenticationEnabled: boolean;
 

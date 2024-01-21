@@ -103,56 +103,44 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       return savedEntity;
     } catch (err) {
       throw err;
-      // console.log(err);
-      //   if (
-      //     err.code == 23502 ||
-      //     err.code == 23514 ||
-      //     err.code == '22P02' ||
-      //     err.code === 'ERR_INVALID_ARG_TYPE'
-      //   )
-      //     throw new BadRequestException('Invalid input data.', { cause: err });
-      //   if (err.status == 404)
-      //     throw new NotFoundException(`Item with id ${id} not found.`);
-      //   if (err.code == 23505)
-      //     throw new ConflictException(`${err.detail}`, { cause: err });
     }
   }
 
   async update2(id: number, updatedEntity: T): Promise<number | T | void> {
     try {
-      const existingEntity = await this.entityRepository.findOne({
-        where: { id: Equal(id) },
-      });
+      // const existingEntity = await this.entityRepository.findOne({
+      //   where: { id: Equal(id) },
+      // });
 
-      if (!existingEntity) {
-        try {
-          const newEntity = await this.create(updatedEntity);
-          return newEntity.id;
-        } catch (err) {
-          throw err;
-        }
-      }
-
-      Object.assign(existingEntity, updatedEntity);
-
-      const savedEntity = (await this.entityRepository.save(
-        existingEntity,
-      )) as T;
-      this.eventEmitter.emit('entity.updated', savedEntity);
-      return savedEntity;
-    } catch (err) {
-      // console.log('2', err);
-      // if (err.code == 23502 || err.code == 23514 || err.code == '22P02')
-      //   throw new BadRequestException(
-      //     `Invalide inpute date in ${err.column.toUpperCase()} field or field is missing.`,
-      //     { cause: err },
-      //   );
-      // if (err.code === 'ERR_INVALID_ARG_TYPE')
-      //   throw new BadRequestException(`Invalid argument type.`, { cause: err });
-      // if (err.code == 23505) {
-      //   throw new ConflictException(`${err.detail}`, { cause: err });
+      // if (!existingEntity) {
+      //   try {
+      //     const newEntity = await this.create(updatedEntity);
+      //     return newEntity.id;
+      //   } catch (err) {
+      //     throw err;
+      //   }
       // }
 
+      // Object.assign(existingEntity, updatedEntity);
+
+      // const savedEntity = (await this.entityRepository.save(
+      //   existingEntity,
+      // )) as T;
+      console.log('update', { ...updatedEntity, id });
+      const savedEntity = await this.entityRepository.upsert(
+        { ...updatedEntity, id },
+        {
+          conflictPaths: ['id'],
+          skipUpdateIfNoValuesChanged: false,
+          upsertType: 'on-conflict-do-update',
+        },
+      );
+
+      console.log(savedEntity);
+      this.eventEmitter.emit('entity.updated', savedEntity);
+      return 8;
+    } catch (err) {
+      console.log(err);
       throw err;
     }
   }

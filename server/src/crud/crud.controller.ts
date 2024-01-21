@@ -1,5 +1,4 @@
 import {
-  BadGatewayException,
   Body,
   ClassSerializerInterceptor,
   Controller,
