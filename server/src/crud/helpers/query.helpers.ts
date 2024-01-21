@@ -37,6 +37,28 @@ export const getSelectedOrder = (order: string) => {
   });
   return selectedOrder;
 };
+export const getSearchQuery = (search: string) => {
+  if (!search) return;
+
+  const searchPattern = /^([a-zA-Z0-9,-_\.]+):([a-zA-Z0-9,-;_\.\s]+)$/;
+  console.log(search.match(search));
+  const validateSearchQuery = (search: string) => {
+    if (!search.match(searchPattern))
+      throw new BadRequestException('Invalid search parameter');
+  };
+
+  validateSearchQuery(search);
+  const searchQuery = [];
+  const searchParameters = search.split(':');
+
+  searchParameters[0].split(',').forEach((p) => {
+    searchQuery.push({ [p]: ILike(`%${searchParameters[1]}%`) });
+  });
+
+  console.log(searchQuery);
+
+  return searchQuery;
+};
 
 export const getSelectedPagnation = (page: string, limit: string) => {
   // check if page and size are valid

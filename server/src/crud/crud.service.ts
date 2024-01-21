@@ -5,6 +5,7 @@ import { Repository, Equal } from 'typeorm';
 import { CrudEntity } from './crud.entity';
 import { ICrudService } from './crud.service.inerface';
 import {
+  getSearchQuery,
   getSelectedFields,
   getSelectedFilters,
   getSelectedOrder,
@@ -35,16 +36,28 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
   }
 
   async findAll(req: Request): Promise<[T[], number]> {
-    const { fields, page, limit, relations, order, filters } = req.query;
+    const { fields, page, limit, relations, order, filters, search } =
+      req.query;
 
     const selectedFields = getSelectedFields(fields as string);
     const selectedRelations = getSelectedRelations(relations as string);
     const selectedOrder = getSelectedOrder(order as string);
+    const searchQuery = getSearchQuery(search as string);
     const { take, skip } = getSelectedPagnation(
       page as string,
       limit as string,
     );
     const selectedFilters = getSelectedFilters(filters as string);
+
+    const filterAndSearch = [];
+
+
+    console.log(searchQuery);
+    searchQuery
+      ? searchQuery.forEach((q) => {
+          filterAndSearch.push({ ...selectedFilters, ...q });
+        })
+      : '';
 
     return (await this.entityRepository.findAndCount({
       select: selectedFields,
@@ -53,7 +66,7 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       take,
       relations: selectedRelations,
       // loadRelationIds: !selectedRelations,
-      where: selectedFilters,
+      where: filterAndSearch || selectedFilters,
     })) as [T[], number];
   }
 

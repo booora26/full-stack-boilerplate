@@ -13,6 +13,8 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
     const response = ctx.getResponse();
     const request = ctx.getRequest();
 
+    console.log('uhvacena greska', exception);
+
     let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
 
