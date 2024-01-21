@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import {
   ILike,
   In,
@@ -21,27 +22,55 @@ export const getSelectedRelations = (relations: string) => {
 
 export const getSelectedOrder = (order: string) => {
   if (!order) return {};
+
+  const sortPattern = /^([a-zA-Z0-9]+):(asc|desc)$/;
+  const validateOrderParams = (order: string) => {
+    if (!order.match(sortPattern))
+      throw new BadRequestException('Invalid sort parameter');
+  };
   const selectedOrder = {};
   order.split(';').forEach((o) => {
+    validateOrderParams(o);
     const i = o.split(':');
     Object.assign(selectedOrder, { [i[0]]: i[1].toUpperCase() });
   });
   return selectedOrder;
 };
 
-export const getSelectedPagnation = (page: number, limit: number) => {
+export const getSelectedPagnation = (page: string, limit: string) => {
+  // check if page and size are valid
+  if (
+    (page && Number(page) < 1) ||
+    (limit && Number(limit) < 1) ||
+    (isNaN(Number(limit)) && page)
+  ) {
+    throw new BadRequestException('Invalid pagination params');
+  }
   let take: number | null;
-  limit ? (take = limit) : take;
+  limit ? (take = Number(limit)) : take;
   let skip: number | null;
-  page ? (skip = (page - 1) * limit) : skip;
+  page ? (skip = (Number(page) - 1) * Number(limit)) : skip;
 
   return { take, skip };
 };
 
 export const getSelectedFilters = (filters: string) => {
   if (!filters) return {};
+
+  // validate the format of the filter, if the rule is 'isnull' or 'isnotnull' it don't need to have a value
+  const validateFilterParams = (filter: string) => {
+    if (
+      !filter.match(
+        /^[a-zA-Z0-9_]+:(eq|neq|gt|gte|lt|lte|like|nlike|in|nin):[a-zA-Z0-9_\-,]+$/,
+      ) &&
+      !filter.match(/^[a-zA-Z0-9_]+:(isnull|isnotnull)$/)
+    ) {
+      throw new BadRequestException('Invalid filter parameter');
+    }
+  };
   const selectedFilters = {};
   filters.split(';').forEach((f) => {
+    validateFilterParams(f);
     const i = f.split(':');
     if (i[1] == FilterRule.IS_NULL)
       Object.assign(selectedFilters, { [i[0]]: IsNull() });
@@ -68,7 +97,6 @@ export const getSelectedFilters = (filters: string) => {
     if (i[1] == FilterRule.NOT_IN)
       Object.assign(selectedFilters, { [i[0]]: Not(In(i[2].split(','))) });
   });
-  console.log(selectedFilters);
   return selectedFilters;
 };
 

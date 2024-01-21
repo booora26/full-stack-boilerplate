@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Equal, Like, ILike } from 'typeorm';
+import { Repository, Equal } from 'typeorm';
 import { CrudEntity } from './crud.entity';
 import { ICrudService } from './crud.service.inerface';
 import {
@@ -10,7 +10,8 @@ import {
   getSelectedOrder,
   getSelectedPagnation,
   getSelectedRelations,
-} from './crud.helpers';
+} from './helpers/query.helpers';
+import { Request } from 'express';
 
 @Injectable()
 export class CrudService<T extends CrudEntity> implements ICrudService<T> {
@@ -21,26 +22,29 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
   ) {}
 
   async create(newEntity: T): Promise<T> {
-    const createdEntity = this.entityRepository.create(newEntity);
-    const savedEntity = (await this.entityRepository.save(createdEntity)) as T;
-    this.eventEmitter.emit('entity.created', savedEntity);
-    return savedEntity;
+    try {
+      const createdEntity = this.entityRepository.create(newEntity);
+      const savedEntity = (await this.entityRepository.save(
+        createdEntity,
+      )) as T;
+      this.eventEmitter.emit('entity.created', savedEntity);
+      return savedEntity;
+    } catch (err) {
+      throw err;
+    }
   }
 
-  async findAll(req): Promise<[T[], number]> {
+  async findAll(req: Request): Promise<[T[], number]> {
     const { fields, page, limit, relations, order, filters } = req.query;
 
-    const selectedFields = getSelectedFields(fields);
-    const selectedRelations = getSelectedRelations(relations);
-    const selectedOrder = getSelectedOrder(order);
-    const { take, skip } = getSelectedPagnation(page, limit);
-    const selectedFilters = getSelectedFilters(filters);
-
-    // const selectedFilters = {};
-    // Object.entries(filters).forEach(([field, value]) => {
-    //   // Object.assign(selectedFilters, { [field]: ILike(`%${value}%`) });
-    //   Object.assign(selectedFilters, { [field]: value });
-    // });
+    const selectedFields = getSelectedFields(fields as string);
+    const selectedRelations = getSelectedRelations(relations as string);
+    const selectedOrder = getSelectedOrder(order as string);
+    const { take, skip } = getSelectedPagnation(
+      page as string,
+      limit as string,
+    );
+    const selectedFilters = getSelectedFilters(filters as string);
 
     return (await this.entityRepository.findAndCount({
       select: selectedFields,
@@ -48,11 +52,7 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       skip,
       take,
       relations: selectedRelations,
-      loadRelationIds: !selectedRelations,
-      // || {
-      //   relations: separatedRelations,
-      //   disableMixedMap: false,
-      // },
+      // loadRelationIds: !selectedRelations,
       where: selectedFilters,
     })) as [T[], number];
   }
@@ -73,46 +73,88 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
   }
 
   async findOne(id: number): Promise<T> {
-    return (await this.entityRepository.findOne({
-      where: { id: Equal(id) },
-    })) as T;
+    try {
+      const item = (await this.entityRepository.findOne({
+        where: { id: Equal(id) },
+      })) as T;
+
+      if (!item) throw new NotFoundException(`Item with id ${id} not found.`);
+
+      return item;
+    } catch (err) {
+      throw err;
+    }
   }
 
   async update(id: number, updatedEntity: Partial<Omit<T, 'id'>>): Promise<T> {
-    const existingEntity = await this.entityRepository.findOne({
-      where: { id: Equal(id) },
-    });
+    try {
+      const existingEntity = await this.entityRepository.findOne({
+        where: { id: Equal(id) },
+      });
 
-    Object.assign(existingEntity, updatedEntity);
+      if (!existingEntity) throw new NotFoundException();
 
-    const savedEntity = (await this.entityRepository.save(existingEntity)) as T;
-    this.eventEmitter.emit('entity.updated', savedEntity);
-    return savedEntity;
-  }
+      Object.assign(existingEntity, updatedEntity);
 
-  async update2(id: number, updatedEntity: T): Promise<T> {
-    const existingEntity = await this.entityRepository.findOne({
-      where: { id: Equal(id) },
-    });
-
-    console.log('up', updatedEntity, id);
-
-    if (!existingEntity) {
-      const newEntity = this.entityRepository.create({
-        ...updatedEntity,
-        id,
-      }) as T;
-      console.log(newEntity);
-      const savedEntity = await this.entityRepository.save(newEntity);
+      const savedEntity = (await this.entityRepository.save(
+        existingEntity,
+      )) as T;
       this.eventEmitter.emit('entity.updated', savedEntity);
       return savedEntity;
+    } catch (err) {
+      throw err;
+      // console.log(err);
+      //   if (
+      //     err.code == 23502 ||
+      //     err.code == 23514 ||
+      //     err.code == '22P02' ||
+      //     err.code === 'ERR_INVALID_ARG_TYPE'
+      //   )
+      //     throw new BadRequestException('Invalid input data.', { cause: err });
+      //   if (err.status == 404)
+      //     throw new NotFoundException(`Item with id ${id} not found.`);
+      //   if (err.code == 23505)
+      //     throw new ConflictException(`${err.detail}`, { cause: err });
     }
+  }
 
-    Object.assign(existingEntity, updatedEntity);
+  async update2(id: number, updatedEntity: T): Promise<number | T | void> {
+    try {
+      const existingEntity = await this.entityRepository.findOne({
+        where: { id: Equal(id) },
+      });
 
-    const savedEntity = (await this.entityRepository.save(existingEntity)) as T;
-    this.eventEmitter.emit('entity.updated', savedEntity);
-    return savedEntity;
+      if (!existingEntity) {
+        try {
+          const newEntity = await this.create(updatedEntity);
+          return newEntity.id;
+        } catch (err) {
+          throw err;
+        }
+      }
+
+      Object.assign(existingEntity, updatedEntity);
+
+      const savedEntity = (await this.entityRepository.save(
+        existingEntity,
+      )) as T;
+      this.eventEmitter.emit('entity.updated', savedEntity);
+      return savedEntity;
+    } catch (err) {
+      // console.log('2', err);
+      // if (err.code == 23502 || err.code == 23514 || err.code == '22P02')
+      //   throw new BadRequestException(
+      //     `Invalide inpute date in ${err.column.toUpperCase()} field or field is missing.`,
+      //     { cause: err },
+      //   );
+      // if (err.code === 'ERR_INVALID_ARG_TYPE')
+      //   throw new BadRequestException(`Invalid argument type.`, { cause: err });
+      // if (err.code == 23505) {
+      //   throw new ConflictException(`${err.detail}`, { cause: err });
+      // }
+
+      throw err;
+    }
   }
 
   async softRemove(id: number): Promise<T> {
@@ -141,8 +183,15 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
   }
 
   async remove(id: number) {
-    const removedEntity = await this.entityRepository.delete(id);
-    this.eventEmitter.emit('entity.deleted', removedEntity);
-    return removedEntity;
+    try {
+      const removedEntity = await this.entityRepository.delete(id);
+      if (removedEntity.affected == 0)
+        throw new NotFoundException(`Item with id ${id} not found.`);
+      this.eventEmitter.emit('entity.deleted', removedEntity);
+      return removedEntity;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   }
 }

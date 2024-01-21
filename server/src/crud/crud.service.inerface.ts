@@ -1,11 +1,7 @@
+import { Request } from 'express';
+
 export interface ICrudService<T> {
-  findAll(
-    fields?: string,
-    page?: number,
-    limit?: number | null,
-    order?: string | null,
-    relations?: string,
-  ): Promise<[T[], number]>;
+  findAll(req?: Request): Promise<[T[], number]>;
   findActive(
     fields?: string[],
     page?: number,

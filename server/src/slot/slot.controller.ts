@@ -26,8 +26,8 @@ export class SlotController {
   }
 
   @Get()
-  findAll(@Query('fields') fields: string) {
-    return this.slotService.findAll(fields);
+  findAll(@Query() query) {
+    return this.slotService.findAll(query);
   }
 
   @Get(':id')

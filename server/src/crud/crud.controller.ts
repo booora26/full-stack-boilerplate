@@ -5,21 +5,23 @@ import {
   Controller,
   Delete,
   Get,
-  HostParam,
   Param,
   Patch,
   Post,
   Put,
   Query,
   UseInterceptors,
-  Headers,
   Req,
   Res,
 } from '@nestjs/common';
 import { CrudEntity } from './crud.entity';
 import { CrudService } from './crud.service';
 import { Public } from '../auth/decotators/public.decorator';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import {
+  generateLocationHeader,
+  generatePagnationHeaders,
+} from './helpers/header.helpers';
 
 @Controller()
 export class CrudController<T extends CrudEntity> {
@@ -31,71 +33,45 @@ export class CrudController<T extends CrudEntity> {
     @Req() req,
     @Res({ passthrough: true }) res: Response,
   ) {
-    try {
-      const result = await this.service.create(createBaseDto);
-      const location = req.url;
-      res.set('Location', `${location}/${result.id}`);
-      return result;
-    } catch (err) {
-      throw new BadGatewayException(err);
-    }
+    const newItem = await this.service.create(createBaseDto);
+    const { id } = newItem;
+    const linkHeader = generateLocationHeader(req.url, id);
+    res.set(linkHeader);
+    return id;
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Public()
   @Get()
-  async findAll(@Req() req, @Res({ passthrough: true }) res: Response) {
-    try {
-      console.log('url', req.headers);
+  async findAll(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.service.findAll(req);
 
-      const result = await this.service.findAll(req);
+    const items = result[0];
+    const itemsCount = result[1];
 
-      const data = result[0];
-      const count = result[1];
-
-      console.log('broj', count);
-      const currentPageURI = `${req.protocol}://${req.headers.host}${req.url}`;
-      const { page, limit } = req.query;
-      const nextPage = Number(page) + 1;
-      const previousPage = Number(page) - 1;
-      const lastPage = Number((count / limit).toFixed(0));
-
-      const nextPageURI = currentPageURI.replace(
-        `page=${page}`,
-        `page=${nextPage}`,
-      );
-      console.log('next', nextPageURI, nextPage, currentPageURI);
-      const previousPageURI = currentPageURI.replace(
-        `page=${page}`,
-        `page=${previousPage}`,
-      );
-      const lastPageURI = currentPageURI.replace(
-        `page=${page}`,
-        `page=${lastPage}`,
-      );
-      const firstPageURI = currentPageURI.replace(`page=${page}`, `page=1`);
-
-      const headerLinks = [
-        `<${firstPageURI}>;rel=first`,
-        `<${lastPageURI}>;rel=last`,
-      ];
-
-      nextPage < lastPage ? headerLinks.push(`<${nextPageURI}>;rel=next`) : '';
-      previousPage > 0 ? headerLinks.push(`<${previousPageURI}>;rel=prev`) : '';
-
-      res.header({
-        Link: headerLinks.join(','),
-        // Link: `<${nextPageURI}>;rel=next,<${previousPageURI}>;rel=prev,<${lastPageURI}>;rel=last,<${firstPageURI}>;rel=first`,
-        'Pagination-Count': lastPage > 0 ? lastPage : 1,
-        'Pagination-Page': page,
-        'Pagination-Limit': limit,
-        'X-Total-Count': count,
-      });
-
-      return data;
-    } catch (err) {
-      throw new BadGatewayException(err);
+    if (itemsCount === 0) {
+      res.status(204);
+      return;
     }
+
+    const { protocol, headers, originalUrl } = req;
+    const currentPageURI = `${protocol}://${headers.host}${originalUrl}`;
+    const { page, limit } = req.query;
+
+    let pagnationHeader = {};
+    pagnationHeader = generatePagnationHeaders(
+      currentPageURI,
+      page as string,
+      limit as string,
+      itemsCount,
+    );
+
+    res.header(pagnationHeader);
+
+    return items;
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
@@ -106,70 +82,52 @@ export class CrudController<T extends CrudEntity> {
     @Query('take') take?: number | null,
     @Query('relations') relations?: string[],
   ) {
-    try {
-      const selectedFields = fields.split(',');
-      return await this.service.findActive(
-        selectedFields,
-        skip,
-        take,
-        relations,
-      );
-    } catch (err) {
-      throw new BadGatewayException(err);
-    }
+    const selectedFields = fields.split(',');
+    return await this.service.findActive(selectedFields, skip, take, relations);
   }
 
   @Get(':id')
   @Public()
   async findOne(@Param('id') id: string) {
-    try {
-      return await this.service.findOne(+id);
-    } catch (err) {
-      throw new BadGatewayException(err);
-    }
+    return await this.service.findOne(+id);
   }
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateBaseDto: T) {
-    try {
-      return await this.service.update(+id, updateBaseDto);
-    } catch (err) {
-      throw new BadGatewayException(err);
-    }
+    return await this.service.update(+id, updateBaseDto);
   }
   @Put(':id')
-  async update2(@Param('id') id: string, @Body() updateBaseDto: T) {
-    try {
-      return await this.service.update2(+id, updateBaseDto);
-    } catch (err) {
-      throw new BadGatewayException(err);
+  async update2(
+    @Param('id') id: string,
+    @Body() updateBaseDto: T,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const item = await this.service.update2(+id, updateBaseDto);
+    if (typeof item === 'number') {
+      const { url, params } = req;
+      const newItemURL = `${url}`.replace(`/${params.id}`, '');
+      const linkHeader = generateLocationHeader(newItemURL, item);
+      res.set(linkHeader);
+
+      res.status(201);
+      return item;
     }
+    return item;
   }
 
   @Post(':id/soft-remove')
   async softRemove(@Param('id') id: string) {
-    try {
-      return await this.service.softRemove(+id);
-    } catch (err) {
-      throw new BadGatewayException(err);
-    }
+    return await this.service.softRemove(+id);
   }
 
   @Post(':id/restore')
   async restore(@Param('id') id: string) {
-    try {
-      return await this.service.restore(+id);
-    } catch (err) {
-      throw new BadGatewayException(err);
-    }
+    return await this.service.restore(+id);
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    try {
-      return await this.service.remove(+id);
-    } catch (err) {
-      throw new BadGatewayException(err);
-    }
+    return await this.service.remove(+id);
   }
 }
