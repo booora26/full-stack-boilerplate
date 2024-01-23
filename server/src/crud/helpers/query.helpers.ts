@@ -68,7 +68,6 @@ export const getSelectedOrder = (order: string, metadata) => {
       throw new BadRequestException('Invalid sort parameter.');
   };
   const selectedOrder = {};
-  console.log('num order', order.length);
   if (order && typeof order == 'object')
     throw new BadRequestException(
       'Field ORDER should be used only once in query.',
@@ -93,7 +92,12 @@ export const getSelectedOrder = (order: string, metadata) => {
 export const getSearchQuery = (search: string, metadata) => {
   if (!search) return;
 
-  const searchPattern = /^([a-zA-Z0-9,-_\.]+)|([a-zA-Z0-9,-;_\.\s]+)$/;
+  if (search && typeof search == 'object')
+    throw new BadRequestException(
+      'Field SEARCH should be used only once in query.',
+    );
+
+  const searchPattern = /^([a-zA-Z0-9,-_\.]+)|([a-zA-Z0-9,-;_\.\s ]+)$/;
   console.log(search.match(search));
   const validateSearchQuery = (search: string) => {
     if (!search.match(searchPattern))
@@ -142,6 +146,11 @@ export const getSelectedPagnation = (page: string, limit: string) => {
 export const getSelectedFilters = (filters: string, metadata) => {
   if (!filters) return {};
 
+  if (filters && typeof filters == 'object')
+    throw new BadRequestException(
+      'Field FILTERS should be used only once in query.',
+    );
+
   const possibleFields = metadata.columns.map((r) => r.propertyName);
 
   const fieldTypes = new Object();
@@ -163,6 +172,103 @@ export const getSelectedFilters = (filters: string, metadata) => {
       'integer',
       'float',
       'float4',
+      'boolean',
+    ],
+    neq: [
+      'varchar',
+      'text',
+      'char',
+      'enum',
+      'timestamp',
+      'integer',
+      'float',
+      'float4',
+      'boolean',
+    ],
+    gt: [
+      'varchar',
+      'text',
+      'char',
+      'enum',
+      'timestamp',
+      'integer',
+      'float',
+      'float4',
+    ],
+    gte: [
+      'varchar',
+      'text',
+      'char',
+      'enum',
+      'timestamp',
+      'integer',
+      'float',
+      'float4',
+      'boolean',
+    ],
+    lt: [
+      'varchar',
+      'text',
+      'char',
+      'enum',
+      'timestamp',
+      'integer',
+      'float',
+      'float4',
+      'boolean',
+    ],
+    lte: [
+      'varchar',
+      'text',
+      'char',
+      'enum',
+      'timestamp',
+      'integer',
+      'float',
+      'float4',
+      'boolean',
+    ],
+    in: [
+      'varchar',
+      'text',
+      'char',
+      'enum',
+      'timestamp',
+      'integer',
+      'float',
+      'float4',
+    ],
+    nin: [
+      'varchar',
+      'text',
+      'char',
+      'enum',
+      'timestamp',
+      'integer',
+      'float',
+      'float4',
+    ],
+    isnull: [
+      'varchar',
+      'text',
+      'char',
+      'enum',
+      'timestamp',
+      'integer',
+      'float',
+      'float4',
+      'boolean',
+    ],
+    isnotnull: [
+      'varchar',
+      'text',
+      'char',
+      'enum',
+      'timestamp',
+      'integer',
+      'float',
+      'float4',
+      'boolean',
     ],
   };
 
@@ -170,7 +276,7 @@ export const getSelectedFilters = (filters: string, metadata) => {
   const validateFilterParams = (filter: string) => {
     if (
       !filter.match(
-        /^([a-zA-Z0-9_]+)\|(eq|neq|gt|gte|lt|lte|like|nlike|in|nin)\|([a-zA-Z0-9_\-,]+)$/,
+        /^([a-zA-Z0-9_]+)\|(eq|neq|gt|gte|lt|lte|like|nlike|in|nin)\|([a-zA-Z0-9_\-, ]+)$/,
       ) &&
       !filter.match(/^[a-zA-Z0-9_]+\|(isnull|isnotnull)$/)
     ) {
@@ -195,8 +301,7 @@ export const getSelectedFilters = (filters: string, metadata) => {
       throw new BadRequestException(
         `Field ${i[0].toUpperCase()} must be ${operatorTypes[i[1]]
           .toString()
-          .replaceAll(',', ' OR ')
-          .toUpperCase()} to perform ${i[1].toUpperCase()} operation.`,
+          .replaceAll(',', ', ')} to perform ${i[1].toUpperCase()} operation.`,
       );
     let field;
     const previousFilter = selectedFilters[i[0]];

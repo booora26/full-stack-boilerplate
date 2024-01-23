@@ -24,7 +24,7 @@ export class AppointmentEntity extends CrudEntity {
   user?: UserEntity;
   @Column({ nullable: true })
   userId?: number;
-  @Column()
+  @Column({ type: 'timestamp' })
   date: Date;
   @Column({ type: 'varchar' })
   slot: string;
