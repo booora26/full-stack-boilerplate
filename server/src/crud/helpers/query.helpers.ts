@@ -11,51 +11,113 @@ import {
   Not,
 } from 'typeorm';
 
-export const getSelectedFields = (fields: string) => {
+export const getSelectedFields = (fields: string, metadata) => {
   if (!fields) return {};
-  return fields.split(',');
+  const possibleFields = metadata.columns.map((r) => r.propertyName);
+
+  const selectedFields = fields.split(',');
+
+  selectedFields.forEach((sf) => {
+    if (!possibleFields.includes(sf)) {
+      throw new BadRequestException(
+        `Field ${sf.toUpperCase()} do not exists in ${metadata.name}.${
+          possibleFields.length
+            ? ` Possible fields are ${possibleFields
+                .toString()
+                .replaceAll(',', ', ')}.`
+            : ' This resource does not have any fields.'
+        }`,
+      );
+    }
+  });
+
+  return selectedFields;
 };
 
-export const getSelectedRelations = (relations: string) => {
+export const getSelectedRelations = (relations: string, metadata) => {
   if (!relations) return {};
-  return relations.split(',');
+
+  const selectedRelations = relations.split(',');
+
+  const possibleRelations = metadata.relations.map((r) => r.propertyName);
+
+  selectedRelations.forEach((sr) => {
+    if (!possibleRelations.includes(sr)) {
+      throw new BadRequestException(
+        `Relation ${sr.toUpperCase()} do not exists.${
+          possibleRelations.length
+            ? ` Possible relations are ${possibleRelations
+                .toString()
+                .replaceAll(',', ', ')}.`
+            : ' This resource does not have any relations.'
+        }`,
+      );
+    }
+  });
+  return selectedRelations;
 };
 
-export const getSelectedOrder = (order: string) => {
+export const getSelectedOrder = (order: string, metadata) => {
   if (!order) return {};
 
-  const sortPattern = /^([a-zA-Z0-9]+):(asc|desc)$/;
+  const possibleFields = metadata.columns.map((r) => r.propertyName);
+
+  const sortPattern = /^([a-zA-Z0-9]+)|(asc|desc|ASC|DESC)$/;
   const validateOrderParams = (order: string) => {
     if (!order.match(sortPattern))
-      throw new BadRequestException('Invalid sort parameter');
+      throw new BadRequestException('Invalid sort parameter.');
   };
   const selectedOrder = {};
+  console.log('num order', order.length);
+  if (order && typeof order == 'object')
+    throw new BadRequestException(
+      'Field ORDER should be used only once in query.',
+    );
   order.split(';').forEach((o) => {
     validateOrderParams(o);
-    const i = o.split(':');
-    Object.assign(selectedOrder, { [i[0]]: i[1].toUpperCase() });
+    const [field, order] = o.split('|');
+    if (!possibleFields.includes(field))
+      throw new BadRequestException(
+        `Field ${field.toUpperCase()} do not exists in ${metadata.name}.${
+          possibleFields.length
+            ? ` Possible fields are ${possibleFields
+                .toString()
+                .replaceAll(',', ', ')}`
+            : ' This resource does not have any fields.'
+        }`,
+      );
+    Object.assign(selectedOrder, { [field]: order.toUpperCase() });
   });
   return selectedOrder;
 };
-export const getSearchQuery = (search: string) => {
+export const getSearchQuery = (search: string, metadata) => {
   if (!search) return;
 
-  const searchPattern = /^([a-zA-Z0-9,-_\.]+):([a-zA-Z0-9,-;_\.\s]+)$/;
+  const searchPattern = /^([a-zA-Z0-9,-_\.]+)|([a-zA-Z0-9,-;_\.\s]+)$/;
   console.log(search.match(search));
   const validateSearchQuery = (search: string) => {
     if (!search.match(searchPattern))
       throw new BadRequestException('Invalid search parameter');
   };
 
-  validateSearchQuery(search);
-  const searchQuery = [];
-  const searchParameters = search.split(':');
-
-  searchParameters[0].split(',').forEach((p) => {
-    searchQuery.push({ [p]: ILike(`%${searchParameters[1]}%`) });
+  const searchableFields = [];
+  metadata.columns.map((c) => {
+    if (c.type === 'varchar') {
+      searchableFields.push(c.propertyName);
+    }
   });
 
-  console.log(searchQuery);
+  validateSearchQuery(search);
+  const searchQuery = [];
+  const [keys, value] = search.split('|');
+
+  keys.split(',').forEach((k) => {
+    if (!searchableFields.includes(k))
+      throw new BadRequestException(
+        `Field ${k.toUpperCase()} is not searchable. Searchable fields are ${searchableFields}.`,
+      );
+    searchQuery.push({ [k]: ILike(`%${value}%`) });
+  });
 
   return searchQuery;
 };
@@ -67,7 +129,7 @@ export const getSelectedPagnation = (page: string, limit: string) => {
     (limit && Number(limit) < 1) ||
     (isNaN(Number(limit)) && page)
   ) {
-    throw new BadRequestException('Invalid pagination params');
+    throw new BadRequestException('Invalid pagination params.');
   }
   let take: number | null;
   limit ? (take = Number(limit)) : take;
@@ -77,24 +139,65 @@ export const getSelectedPagnation = (page: string, limit: string) => {
   return { take, skip };
 };
 
-export const getSelectedFilters = (filters: string) => {
+export const getSelectedFilters = (filters: string, metadata) => {
   if (!filters) return {};
+
+  const possibleFields = metadata.columns.map((r) => r.propertyName);
+
+  const fieldTypes = new Object();
+  metadata.columns.map((c) => {
+    Object.assign(fieldTypes, { [c.propertyName]: c.type });
+  });
+
+  console.log(fieldTypes);
+
+  const operatorTypes = {
+    like: ['varchar', 'text', 'char'],
+    nlike: ['varchar', 'text', 'char'],
+    eq: [
+      'varchar',
+      'text',
+      'char',
+      'enum',
+      'timestamp',
+      'integer',
+      'float',
+      'float4',
+    ],
+  };
 
   // validate the format of the filter, if the rule is 'isnull' or 'isnotnull' it don't need to have a value
   const validateFilterParams = (filter: string) => {
     if (
       !filter.match(
-        /^[a-zA-Z0-9_]+:(eq|neq|gt|gte|lt|lte|like|nlike|in|nin):[a-zA-Z0-9_\-,]+$/,
+        /^([a-zA-Z0-9_]+)\|(eq|neq|gt|gte|lt|lte|like|nlike|in|nin)\|([a-zA-Z0-9_\-,]+)$/,
       ) &&
-      !filter.match(/^[a-zA-Z0-9_]+:(isnull|isnotnull)$/)
+      !filter.match(/^[a-zA-Z0-9_]+\|(isnull|isnotnull)$/)
     ) {
-      throw new BadRequestException('Invalid filter parameter');
+      throw new BadRequestException(
+        'Invalid filter parameter. Use | as separator and available operators eq, neq, gt, gte, lt, lte, like, nlike, in, nin ',
+      );
     }
   };
   const selectedFilters = new Object();
   filters.split(';').forEach((f) => {
     validateFilterParams(f);
-    const i = f.split(':');
+    const i = f.split('|');
+    if (!possibleFields.includes(i[0]))
+      throw new BadRequestException(
+        `Field ${i[0].toUpperCase()} do not exists in ${metadata.name}.${
+          possibleFields.length
+            ? ` Possible fields are ${possibleFields.map((pf) => pf)}`
+            : ' This resource does not have any fields.'
+        }`,
+      );
+    if (!operatorTypes[i[1]].includes(fieldTypes[i[0]]))
+      throw new BadRequestException(
+        `Field ${i[0].toUpperCase()} must be ${operatorTypes[i[1]]
+          .toString()
+          .replaceAll(',', ' OR ')
+          .toUpperCase()} to perform ${i[1].toUpperCase()} operation.`,
+      );
     let field;
     const previousFilter = selectedFilters[i[0]];
     if (i[1] == FilterRule.IS_NULL) field = IsNull();
@@ -115,6 +218,8 @@ export const getSelectedFilters = (filters: string) => {
       ? Object.assign(selectedFilters, { [i[0]]: And(previousFilter, field) })
       : Object.assign(selectedFilters, { [i[0]]: field });
   });
+
+  console.log(selectedFilters);
   return selectedFilters;
 };
 

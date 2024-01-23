@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Equal } from 'typeorm';
+import { Repository, Equal, getMetadataArgsStorage } from 'typeorm';
 import { CrudEntity } from './crud.entity';
 import { ICrudService } from './crud.service.inerface';
 import {
@@ -22,13 +22,18 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
     private eventEmitter: EventEmitter2,
   ) {}
 
+  metadata = this.entityRepository.metadata;
+
   async create(newEntity: T): Promise<T> {
     try {
       const createdEntity = this.entityRepository.create(newEntity);
       const savedEntity = (await this.entityRepository.save(
         createdEntity,
       )) as T;
-      this.eventEmitter.emit('entity.created', savedEntity);
+      this.eventEmitter.emit(
+        `${this.metadata.targetName}.created`,
+        savedEntity,
+      );
       return savedEntity;
     } catch (err) {
       throw err;
@@ -39,25 +44,55 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
     const { fields, page, limit, relations, order, filters, search } =
       req.query;
 
-    const selectedFields = getSelectedFields(fields as string);
-    const selectedRelations = getSelectedRelations(relations as string);
-    const selectedOrder = getSelectedOrder(order as string);
-    const searchQuery = getSearchQuery(search as string);
+    const selectedFields = getSelectedFields(fields as string, this.metadata);
+    const selectedRelations = getSelectedRelations(
+      relations as string,
+      this.metadata,
+    );
+    const selectedOrder = getSelectedOrder(order as string, this.metadata);
+    const searchQuery = getSearchQuery(search as string, this.metadata);
     const { take, skip } = getSelectedPagnation(
       page as string,
       limit as string,
     );
-    const selectedFilters = getSelectedFilters(filters as string);
+    const selectedFilters = getSelectedFilters(
+      filters as string,
+      this.metadata,
+    );
 
     const filterAndSearch = [];
 
-
-    console.log(searchQuery);
     searchQuery
       ? searchQuery.forEach((q) => {
           filterAndSearch.push({ ...selectedFilters, ...q });
         })
       : '';
+
+    let selectedFiltersAndSearch;
+
+    filterAndSearch.length
+      ? (selectedFiltersAndSearch = filterAndSearch)
+      : (selectedFiltersAndSearch = selectedFilters);
+
+    this.entityRepository.metadata.columns.map((c) =>
+      console.log(c.propertyName, c.type),
+    );
+
+    // const target = this.entityRepository.metadata.relations.map(
+    //   (r) => r.propertyName,
+    // );
+    // console.log(
+    //   'one to many',
+    //   this.metadata.oneToManyRelations.map((r) => r.propertyName),
+    // );
+    // console.log(
+    //   'many to one',
+    //   this.metadata.manyToOneRelations.map((r) => r.propertyName),
+    // );
+    // console.log(
+    //   'many to many',
+    //   this.metadata.manyToManyRelations.map((r) => r.propertyName),
+    // );
 
     return (await this.entityRepository.findAndCount({
       select: selectedFields,
@@ -66,7 +101,7 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       take,
       relations: selectedRelations,
       // loadRelationIds: !selectedRelations,
-      where: filterAndSearch || selectedFilters,
+      where: selectedFiltersAndSearch,
     })) as [T[], number];
   }
 
@@ -112,7 +147,10 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       const savedEntity = (await this.entityRepository.save(
         existingEntity,
       )) as T;
-      this.eventEmitter.emit('entity.updated', savedEntity);
+      this.eventEmitter.emit(
+        `${this.metadata.targetName}.updated`,
+        savedEntity,
+      );
       return savedEntity;
     } catch (err) {
       throw err;
@@ -121,37 +159,28 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
 
   async update2(id: number, updatedEntity: T): Promise<number | T | void> {
     try {
-      // const existingEntity = await this.entityRepository.findOne({
-      //   where: { id: Equal(id) },
-      // });
+      const existingEntity = await this.entityRepository.findOne({
+        where: { id: Equal(id) },
+      });
 
-      // if (!existingEntity) {
-      //   try {
-      //     const newEntity = await this.create(updatedEntity);
-      //     return newEntity.id;
-      //   } catch (err) {
-      //     throw err;
-      //   }
-      // }
+      if (!existingEntity) {
+        try {
+          const newEntity = await this.create(updatedEntity);
+          return newEntity.id;
+        } catch (err) {
+          throw err;
+        }
+      }
 
-      // Object.assign(existingEntity, updatedEntity);
+      Object.assign(existingEntity, updatedEntity);
 
-      // const savedEntity = (await this.entityRepository.save(
-      //   existingEntity,
-      // )) as T;
-      console.log('update', { ...updatedEntity, id });
-      const savedEntity = await this.entityRepository.upsert(
-        { ...updatedEntity, id },
-        {
-          conflictPaths: ['id'],
-          skipUpdateIfNoValuesChanged: false,
-          upsertType: 'on-conflict-do-update',
-        },
-      );
+      const savedEntity = (await this.entityRepository.save(
+        existingEntity,
+      )) as T;
 
       console.log(savedEntity);
       this.eventEmitter.emit('entity.updated', savedEntity);
-      return 8;
+      return savedEntity;
     } catch (err) {
       console.log(err);
       throw err;
@@ -188,7 +217,10 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       const removedEntity = await this.entityRepository.delete(id);
       if (removedEntity.affected == 0)
         throw new NotFoundException(`Item with id ${id} not found.`);
-      this.eventEmitter.emit('entity.deleted', removedEntity);
+      this.eventEmitter.emit(
+        `${this.metadata.targetName}.deleted`,
+        removedEntity,
+      );
       return removedEntity;
     } catch (err) {
       console.log(err);

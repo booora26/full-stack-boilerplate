@@ -18,6 +18,8 @@ export class ShopService extends CrudService<ShopEntity> {
   async search(keyword: string) {
     const query = this.repo.createQueryBuilder('shop');
 
+    console.log('shop', this.metadata.relationIds);
+
     query
       .where({ name: ILike(`%${keyword}%`) })
       .orWhere({ displayName: ILike(`%${keyword}%`) });

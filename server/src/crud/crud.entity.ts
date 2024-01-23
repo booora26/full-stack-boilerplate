@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 
 export class CrudEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ type: 'integer' })
   id: number;
   @Exclude()
   @CreateDateColumn({ name: 'created_at' })
@@ -19,6 +19,6 @@ export class CrudEntity {
   @Exclude()
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date;
-  @Column({ name: 'is_active', default: true })
+  @Column({ name: 'is_active', default: true, type: 'boolean' })
   isActive: boolean;
 }

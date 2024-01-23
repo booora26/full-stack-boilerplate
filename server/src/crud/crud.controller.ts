@@ -70,6 +70,8 @@ export class CrudController<T extends CrudEntity> {
 
     res.header(pagnationHeader);
 
+    // console.log('items', items);
+
     return items;
   }
 
