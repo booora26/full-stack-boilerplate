@@ -8,6 +8,7 @@ import {
   Headers,
   Res,
   Req,
+  Query,
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -28,11 +29,11 @@ export class ShopController extends CrudController<ShopEntity> {
 
   @Public()
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<ShopEntity> {
+  async findOne(@Param('id') id: string, @Query() query): Promise<ShopEntity> {
     const cacheKey = `shop_${id}`;
     let shop: ShopEntity = await this.cacheManager.get(cacheKey);
     if (!shop) {
-      shop = await this.service.findOne(+id);
+      shop = await this.service.findOne(+id, query);
       await this.cacheManager.set(cacheKey, shop);
     }
     return shop; // Fix: Return the 'shop' object

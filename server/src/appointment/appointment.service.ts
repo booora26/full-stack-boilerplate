@@ -58,7 +58,7 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
    * @returns An object containing the free slots that can accommodate the requested service
    * and the number of slots required for the service.
    */
-  async freeSlotsByEmployee(shopId, employeeId, date, serviceId) {
+  async freeSlotsByEmployee(shopId, employeeId, date, serviceId, query) {
     const freeSlots = await this.repo
       .createQueryBuilder('app')
       .select(['app.slot', 'app.id', 'app.slotNumber'])
@@ -71,8 +71,8 @@ export class AppointmentService extends CrudService<AppointmentEntity> {
       .getMany();
 
     const [shop, service] = await Promise.all([
-      this.shopService.findOne(shopId),
-      this.servicesService.findOne(serviceId),
+      this.shopService.findOne(shopId, query),
+      this.servicesService.findOne(serviceId, query),
     ]);
 
     const slotDuration = shop.slotDuration;

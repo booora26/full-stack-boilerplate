@@ -31,8 +31,8 @@ export class SlotController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.slotService.findOne(+id);
+  findOne(@Param('id') id: string, @Query() query) {
+    return this.slotService.findOne(+id, query);
   }
 
   @Patch(':id')

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Equal, getMetadataArgsStorage } from 'typeorm';
+import { Repository, Equal } from 'typeorm';
 import { CrudEntity } from './crud.entity';
 import { ICrudService } from './crud.service.inerface';
 import {
@@ -120,10 +120,19 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
     })) as T[];
   }
 
-  async findOne(id: number): Promise<T> {
+  async findOne(id: number, query): Promise<T> {
     try {
+      const { fields, relations } = query;
+      const selectedFields = getSelectedFields(fields as string, this.metadata);
+      const selectedRelations = getSelectedRelations(
+        relations as string,
+        this.metadata,
+      );
+
       const item = (await this.entityRepository.findOne({
         where: { id: Equal(id) },
+        select: selectedFields,
+        relations: selectedRelations,
       })) as T;
 
       if (!item) throw new NotFoundException(`Item with id ${id} not found.`);

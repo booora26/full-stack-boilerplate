@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ShiftsService } from './shifts.service';
 import { ShiftEntity } from './shift.entity';
@@ -23,8 +24,8 @@ export class ShiftsController extends CrudController<ShiftEntity> {
     return shifts;
   }
   @Post()
-  async createShift(@Body() shiftData: Partial<ShiftEntity>) {
-    const shift = await this.service.createShift(shiftData);
+  async createShift(@Body() shiftData: Partial<ShiftEntity>, @Query() query) {
+    const shift = await this.service.createShift(shiftData, query);
     return shift;
   }
 
@@ -32,12 +33,13 @@ export class ShiftsController extends CrudController<ShiftEntity> {
   async updateShift(
     @Param('id') id: number,
     @Body() shiftData: Partial<ShiftEntity>,
+    @Query() query,
   ) {
     if (!shiftData.shop || !shiftData.shop.id) {
       throw new BadRequestException('Shop is missing in request body');
     }
 
-    const shift = await this.service.updateShift(id, shiftData);
+    const shift = await this.service.updateShift(id, shiftData, query);
     return shift;
   }
 }

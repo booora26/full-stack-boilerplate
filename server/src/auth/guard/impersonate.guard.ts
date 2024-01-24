@@ -25,7 +25,7 @@ export class ImpersonateGuard extends AuthGuard('impersonate') {
         request.session.passport.user;
 
       const id = request.params.id;
-      const user = await this.userService.findOne(id);
+      const user = await this.userService.findOne(id, request.query);
       if (!user) {
         throw new NotFoundException();
       }

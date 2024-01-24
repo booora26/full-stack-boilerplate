@@ -125,7 +125,10 @@ export class AuthController {
     @Body('twoFactorAuthenticationCode') twoFactorAuthenticationCode,
   ) {
     try {
-      const user = await this.usersService.findOne(request.user.id);
+      const user = await this.usersService.findOne(
+        request.user.id,
+        request.query,
+      );
       const isCodeValid =
         await this.authService.isTwoFactorAuthenticationCodeValid(
           twoFactorAuthenticationCode,

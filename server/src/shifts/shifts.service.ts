@@ -29,8 +29,8 @@ export class ShiftsService extends CrudService<ShiftEntity> {
     return shifts;
   }
 
-  async createShift(shiftData: Partial<ShiftEntity>) {
-    const shop = await this.shopService.findOne(shiftData.shop.id);
+  async createShift(shiftData: Partial<ShiftEntity>, query) {
+    const shop = await this.shopService.findOne(shiftData.shop.id, query);
     if (!shop) {
       throw new Error('Shop not found');
     }
@@ -43,8 +43,8 @@ export class ShiftsService extends CrudService<ShiftEntity> {
 
     return await this.repo.save(shift);
   }
-  async updateShift(id: number, shiftData: Partial<ShiftEntity>) {
-    const shop = await this.shopService.findOne(shiftData.shop.id);
+  async updateShift(id: number, shiftData: Partial<ShiftEntity>, query) {
+    const shop = await this.shopService.findOne(shiftData.shop.id, query);
     if (!shop) {
       throw new Error('Shop not found');
     }

@@ -89,8 +89,9 @@ export class CrudController<T extends CrudEntity> {
 
   @Get(':id')
   @Public()
-  async findOne(@Param('id') id: string) {
-    return await this.service.findOne(+id);
+  async findOne(@Param('id') id: string, @Query() query?) {
+    console.log(query);
+    return await this.service.findOne(+id, query);
   }
 
   @Patch(':id')

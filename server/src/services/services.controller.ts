@@ -10,7 +10,9 @@ export class ServicesController extends CrudController<ServiceEntity> {
   }
 
   @Post('last-rate')
-  async findLastRateByDate(@Body() body: { date: Date, employeeId?: number, shopId?: number }) {
+  async findLastRateByDate(
+    @Body() body: { date: Date; employeeId?: number; shopId?: number },
+  ) {
     const { date, employeeId, shopId } = body;
     return this.service.findLastRateByDate(date, employeeId, shopId);
   }

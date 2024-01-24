@@ -30,6 +30,7 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
     @Body('employee') employee: EmployeeEntity,
     @Body('date') date: Date,
     @Body('service') service: ServiceEntity,
+    @Query() query,
   ) {
     console.log(shop, employee, date, service);
     const freeSlots = await this.service.freeSlotsByEmployee(
@@ -37,6 +38,7 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
       employee.id,
       date,
       service.id,
+      query,
     );
 
     console.log('freeSlots', freeSlots);

@@ -1,4 +1,4 @@
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 export interface ICrudService<T> {
   findAll(req?: Request): Promise<[T[], number]>;
@@ -8,7 +8,7 @@ export interface ICrudService<T> {
     limit?: number | null,
     relations?: string[],
   ): Promise<T[]>;
-  findOne(id: number): Promise<T>;
+  findOne(id: number, query): Promise<T>;
   create(newEntity: T): Promise<T>;
   update(id: number, entity: T): Promise<T>;
   softRemove(id: number): void;

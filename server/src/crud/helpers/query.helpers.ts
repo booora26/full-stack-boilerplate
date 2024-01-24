@@ -106,7 +106,7 @@ export const getSearchQuery = (search: string, metadata) => {
 
   const searchableFields = [];
   metadata.columns.map((c) => {
-    if (c.type === 'varchar') {
+    if (c.type === 'varchar' || c.type === 'text') {
       searchableFields.push(c.propertyName);
     }
   });
