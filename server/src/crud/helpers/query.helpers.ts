@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import {
   And,
+  Equal,
   ILike,
   In,
   IsNull,
@@ -15,8 +16,6 @@ export const getSelectedFields = (fields: string, metadata): any => {
   console.log('fields', fields);
   if (!fields) return {};
   const possibleFields = metadata.columns.map((r) => r.propertyName);
-
-  console.log('pf', possibleFields);
 
   const selectedFields = fields.split(',');
 
@@ -328,6 +327,60 @@ export const getSelectedFilters = (filters: string, metadata) => {
 
   console.log(selectedFilters);
   return selectedFilters;
+};
+
+export const generateRelationQuery = (
+  id,
+  queryFields,
+  queryRelations,
+  relation,
+  metadata,
+) => {
+  const relationMetadata = metadata.ownRelations.filter(
+    (r) => r.propertyName === relation,
+  )[0].inverseEntityMetadata;
+
+  const inverseSide = metadata.relations[0].inverseSidePropertyPath;
+
+  let selectedFields = getSelectedFields(
+    queryFields as string,
+    relationMetadata,
+  );
+  let selectedRelations = getSelectedRelations(
+    queryRelations as string,
+    relationMetadata,
+  );
+
+  const relationFields = {};
+  if (Object.entries(selectedFields).length > 0)
+    selectedFields.forEach((f) => Object.assign(relationFields, { [f]: true }));
+
+  Object.entries(selectedFields).length > 0
+    ? (selectedFields = { [relation]: relationFields })
+    : (selectedFields = {});
+
+  const relationRelations = {};
+  if (Object.entries(selectedRelations).length > 0)
+    selectedRelations.forEach((f) =>
+      Object.assign(relationRelations, { [f]: true }),
+    );
+
+  Object.entries(relationRelations).length > 0
+    ? (selectedRelations = { [relation]: relationRelations })
+    : (selectedRelations = {});
+
+  const where = {
+    id: Equal(id),
+    [relation]: {
+      [inverseSide]: {
+        id: Equal(id),
+      },
+    },
+  };
+  const select = selectedFields;
+  const relations = { [relation]: relationRelations };
+
+  return { where, select, relations };
 };
 
 export enum FilterRule {

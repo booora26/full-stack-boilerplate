@@ -5,6 +5,7 @@ import { Repository, Equal } from 'typeorm';
 import { CrudEntity } from './crud.entity';
 import { ICrudService } from './crud.service.inerface';
 import {
+  generateRelationQuery,
   getSearchQuery,
   getSelectedFields,
   getSelectedFilters,
@@ -148,56 +149,18 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
     try {
       const { fields: queryFields, relations: queryRelations } = query;
 
-      const relationMetadata = this.metadata.ownRelations.filter(
-        (r) => r.propertyName === relation,
-      )[0].inverseEntityMetadata;
-
-      const inverseSide = this.metadata.relations[0].inverseSidePropertyPath;
-
-      let selectedFields = getSelectedFields(
-        queryFields as string,
-        relationMetadata,
+      const { where, select, relations } = generateRelationQuery(
+        id,
+        queryFields,
+        queryRelations,
+        relation,
+        this.metadata,
       );
-      let selectedRelations = getSelectedRelations(
-        queryRelations as string,
-        relationMetadata,
-      );
-
-      const relationFields = {};
-      if (Object.entries(selectedFields).length > 0)
-        selectedFields.forEach((f) =>
-          Object.assign(relationFields, { [f]: true }),
-        );
-
-      Object.entries(selectedFields).length > 0
-        ? (selectedFields = { [relation]: relationFields })
-        : (selectedFields = {});
-
-      const relationRelations = {};
-      if (Object.entries(selectedRelations).length > 0)
-        selectedRelations.forEach((f) =>
-          Object.assign(relationRelations, { [f]: true }),
-        );
-
-      Object.entries(relationRelations).length > 0
-        ? (selectedRelations = { [relation]: relationRelations })
-        : (selectedRelations = {});
-
-      // console.log('selectedFields', selectedFields);
-
-      console.log('relations', { [relation]: relationRelations });
 
       const item = (await this.entityRepository.findOne({
-        where: {
-          id: Equal(id),
-          [relation]: {
-            [inverseSide]: {
-              id: Equal(id),
-            },
-          },
-        },
-        select: selectedFields,
-        relations: { [relation]: relationRelations },
+        where,
+        select,
+        relations,
       })) as T;
 
       if (!item) throw new NotFoundException(`Item with id ${id} not found.`);
