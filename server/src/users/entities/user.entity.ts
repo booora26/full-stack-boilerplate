@@ -40,8 +40,8 @@ export class UserEntity extends CrudEntity {
   // @ManyToMany(() => RoleEntity, (role) => role.users, { eager: true })
   // roles?: RoleEntity[];
 
-  // @OneToMany(() => AppointmentEntity, (appointment) => appointment.user)
-  // appointement?: AppointmentEntity[];
+  @OneToMany(() => AppointmentEntity, (appointment) => appointment.user)
+  appointements?: AppointmentEntity[];
 
   @BeforeInsert()
   async hashPassword() {

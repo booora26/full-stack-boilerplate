@@ -11,9 +11,12 @@ import {
   Not,
 } from 'typeorm';
 
-export const getSelectedFields = (fields: string, metadata) => {
+export const getSelectedFields = (fields: string, metadata): any => {
+  console.log('fields', fields);
   if (!fields) return {};
   const possibleFields = metadata.columns.map((r) => r.propertyName);
+
+  console.log('pf', possibleFields);
 
   const selectedFields = fields.split(',');
 
@@ -34,7 +37,7 @@ export const getSelectedFields = (fields: string, metadata) => {
   return selectedFields;
 };
 
-export const getSelectedRelations = (relations: string, metadata) => {
+export const getSelectedRelations = (relations: string, metadata): any => {
   if (!relations) return {};
 
   const selectedRelations = relations.split(',');
@@ -98,7 +101,6 @@ export const getSearchQuery = (search: string, metadata) => {
     );
 
   const searchPattern = /^([a-zA-Z0-9,-_\.]+)|([a-zA-Z0-9,-;_\.\s ]+)$/;
-  console.log(search.match(search));
   const validateSearchQuery = (search: string) => {
     if (!search.match(searchPattern))
       throw new BadRequestException('Invalid search parameter');

@@ -13,6 +13,8 @@ import {
   getSelectedRelations,
 } from './helpers/query.helpers';
 import { Request } from 'express';
+import { getEntityRelations } from './helpers/relations.helpers';
+import { ShopEntity } from '../shop/shop.entity';
 
 @Injectable()
 export class CrudService<T extends CrudEntity> implements ICrudService<T> {
@@ -78,9 +80,9 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       console.log(c.propertyName, c.type),
     );
 
-    // const target = this.entityRepository.metadata.relations.map(
-    //   (r) => r.propertyName,
-    // );
+    this.entityRepository.metadata.relations.map((r) =>
+      console.log(r.propertyName),
+    );
     // console.log(
     //   'one to many',
     //   this.metadata.oneToManyRelations.map((r) => r.propertyName),
@@ -142,6 +144,69 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       throw err;
     }
   }
+  async findOneWithRelations(id: number, query, relation?: string): Promise<T> {
+    try {
+      const { fields: queryFields, relations: queryRelations } = query;
+
+      const relationMetadata = this.metadata.ownRelations.filter(
+        (r) => r.propertyName === relation,
+      )[0].inverseEntityMetadata;
+
+      const inverseSide = this.metadata.relations[0].inverseSidePropertyPath;
+
+      let selectedFields = getSelectedFields(
+        queryFields as string,
+        relationMetadata,
+      );
+      let selectedRelations = getSelectedRelations(
+        queryRelations as string,
+        relationMetadata,
+      );
+
+      const relationFields = {};
+      if (Object.entries(selectedFields).length > 0)
+        selectedFields.forEach((f) =>
+          Object.assign(relationFields, { [f]: true }),
+        );
+
+      Object.entries(selectedFields).length > 0
+        ? (selectedFields = { [relation]: relationFields })
+        : (selectedFields = {});
+
+      const relationRelations = {};
+      if (Object.entries(selectedRelations).length > 0)
+        selectedRelations.forEach((f) =>
+          Object.assign(relationRelations, { [f]: true }),
+        );
+
+      Object.entries(relationRelations).length > 0
+        ? (selectedRelations = { [relation]: relationRelations })
+        : (selectedRelations = {});
+
+      // console.log('selectedFields', selectedFields);
+
+      console.log('relations', { [relation]: relationRelations });
+
+      const item = (await this.entityRepository.findOne({
+        where: {
+          id: Equal(id),
+          [relation]: {
+            [inverseSide]: {
+              id: Equal(id),
+            },
+          },
+        },
+        select: selectedFields,
+        relations: { [relation]: relationRelations },
+      })) as T;
+
+      if (!item) throw new NotFoundException(`Item with id ${id} not found.`);
+
+      return item[relation];
+    } catch (err) {
+      throw err;
+    }
+  }
 
   async update(id: number, updatedEntity: Partial<Omit<T, 'id'>>): Promise<T> {
     try {
@@ -166,13 +231,9 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
     }
   }
 
-  async update2(id: number, updatedEntity: T): Promise<number | T | void> {
+  async update2(updatedEntity: T, id?: number): Promise<number | T | void> {
     try {
-      const existingEntity = await this.entityRepository.findOne({
-        where: { id: Equal(id) },
-      });
-
-      if (!existingEntity) {
+      if (!id) {
         try {
           const newEntity = await this.create(updatedEntity);
           return newEntity.id;
@@ -180,6 +241,12 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
           throw err;
         }
       }
+
+      const existingEntity = await this.entityRepository.findOne({
+        where: { id: Equal(id) },
+      });
+
+      if (!existingEntity) throw new NotFoundException();
 
       Object.assign(existingEntity, updatedEntity);
 

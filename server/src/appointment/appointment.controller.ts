@@ -87,10 +87,10 @@ export class AppointmentController extends CrudController<AppointmentEntity> {
   async bookFreeSlots(
     @Body('id', ParseIntPipe) id: number,
     @Body('serviceSlots', ParseIntPipe) serviceSlots: number,
-    @Body('user') user,
+    @Req() req,
     @Body('service') service,
   ) {
-    const res = this.service.bookFreeSlots(id, serviceSlots, user, service);
+    const res = this.service.bookFreeSlots(id, serviceSlots, req.user, service);
 
     return res;
   }

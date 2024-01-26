@@ -31,5 +31,5 @@ export class ShopEntity extends CrudEntity {
   @OneToMany(() => EmployeeEntity, (employee) => employee.shop)
   employees: EmployeeEntity[];
   @OneToMany(() => AppointmentEntity, (appointement) => appointement.shop)
-  appointments: AppointmentEntity[];
+  appointements: AppointmentEntity[];
 }

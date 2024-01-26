@@ -93,19 +93,27 @@ export class CrudController<T extends CrudEntity> {
     console.log(query);
     return await this.service.findOne(+id, query);
   }
+  @Get(':id/:relation')
+  @Public()
+  async findOneWithRelation(
+    @Param('id') id: string,
+    @Param('relation') relation: string,
+    @Query() query?,
+  ) {
+    return await this.service.findOneWithRelations(+id, query, relation);
+  }
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateBaseDto: T) {
     return await this.service.update(+id, updateBaseDto);
   }
-  @Put(':id')
-  async update2(
-    @Param('id') id: string,
+  @Put()
+  async replace(
     @Body() updateBaseDto: T,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const item = await this.service.update2(+id, updateBaseDto);
+    const item = await this.service.update2(updateBaseDto);
     if (typeof item === 'number') {
       const { url, params } = req;
       const newItemURL = `${url}`.replace(`/${params.id}`, '');
@@ -115,6 +123,11 @@ export class CrudController<T extends CrudEntity> {
       res.status(201);
       return item;
     }
+    return item;
+  }
+  @Put(':id')
+  async replaceOne(@Param('id') id: string, @Body() updateBaseDto: T) {
+    const item = await this.service.update2(updateBaseDto, +id);
     return item;
   }
 

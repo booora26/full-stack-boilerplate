@@ -10,6 +10,7 @@ import { CrudEntity } from '../crud/crud.entity';
 import { ShopEntity } from '../shop/shop.entity';
 import { RateEntity } from '../rates/rate.entity';
 import { EmployeeEntity } from '../employees/employee.entity';
+import { AppointmentEntity } from '../appointment/appointment.entity';
 
 @Entity({ name: 'service' })
 export class ServiceEntity extends CrudEntity {
@@ -24,4 +25,6 @@ export class ServiceEntity extends CrudEntity {
 
   @ManyToMany(() => EmployeeEntity, (employee) => employee.services)
   employees: EmployeeEntity[];
+  @OneToMany(() => AppointmentEntity, (appointement) => appointement.service)
+  appointements: AppointmentEntity[];
 }

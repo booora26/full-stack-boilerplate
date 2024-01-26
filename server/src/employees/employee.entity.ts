@@ -14,9 +14,11 @@ import { UserEntity } from '../users/entities/user.entity';
 import { CrudEntity } from '../crud/crud.entity';
 
 @Entity({ name: 'employees' })
-export class EmployeeEntity extends UserEntity {
+export class EmployeeEntity extends CrudEntity {
   @Column()
   name: string;
+  @Column({ unique: true })
+  email: string;
   @ManyToMany(() => ServiceEntity, (service) => service.employees)
   @JoinTable()
   services: ServiceEntity[];
