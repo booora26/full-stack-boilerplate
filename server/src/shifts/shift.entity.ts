@@ -31,7 +31,6 @@ export class ShiftEntity extends CrudEntity {
 
     // Get slotDuration from the shop
     const slotDuration = this.slotDuration;
-    console.log('slotDuration', slotDuration);
 
     const slots = [];
 

@@ -13,7 +13,6 @@ import {
 } from 'typeorm';
 
 export const getSelectedFields = (fields: string, metadata): any => {
-  console.log('fields', fields);
   if (!fields) return {};
   const possibleFields = metadata.columns.map((r) => r.propertyName);
 
@@ -158,8 +157,6 @@ export const getSelectedFilters = (filters: string, metadata) => {
   metadata.columns.map((c) => {
     Object.assign(fieldTypes, { [c.propertyName]: c.type });
   });
-
-  console.log(fieldTypes);
 
   const operatorTypes = {
     like: ['varchar', 'text', 'char'],
@@ -325,7 +322,6 @@ export const getSelectedFilters = (filters: string, metadata) => {
       : Object.assign(selectedFilters, { [i[0]]: field });
   });
 
-  console.log(selectedFilters);
   return selectedFilters;
 };
 

@@ -43,7 +43,7 @@ export class EmployeesService extends CrudService<EmployeeEntity> {
       const ratesPromise = this.ratesService.findRate(
         date,
         employeeId,
-        employee.shopId,
+        employee.shop.id,
       );
       const serviceRatesPromise = employee.services.map(async (service) => {
         const rates = await ratesPromise;

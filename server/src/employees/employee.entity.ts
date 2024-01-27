@@ -26,8 +26,8 @@ export class EmployeeEntity extends CrudEntity {
   appointements: AppointmentEntity;
   @ManyToOne(() => ShopEntity, (shop) => shop.employees)
   shop: ShopEntity;
-  @Column({ nullable: true })
-  shopId: number;
+  // @Column({ nullable: true })
+  // shopId: number;
   @OneToMany(() => RateEntity, (rate) => rate.employee)
   rates: RateEntity[];
 }

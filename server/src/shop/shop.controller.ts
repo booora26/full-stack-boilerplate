@@ -27,28 +27,6 @@ export class ShopController extends CrudController<ShopEntity> {
     super(service);
   }
 
-  @Public()
-  @Get(':id')
-  async findOne(@Param('id') id: string, @Query() query): Promise<ShopEntity> {
-    const cacheKey = `shop_${id}`;
-    let shop: ShopEntity = await this.cacheManager.get(cacheKey);
-    if (!shop) {
-      shop = await this.service.findOne(+id, query);
-      await this.cacheManager.set(cacheKey, shop);
-    }
-    return shop; // Fix: Return the 'shop' object
-  }
-
-  @Patch(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() updateShopDto: any,
-  ): Promise<ShopEntity> {
-    const updatedShop = await this.service.update(+id, updateShopDto);
-    const cacheKey = `shop_${id}`;
-    await this.cacheManager.del(cacheKey);
-    return updatedShop;
-  }
 
   @Get('search/:keyword')
   async search(@Param('keyword') keyword: string) {

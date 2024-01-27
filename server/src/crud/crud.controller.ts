@@ -36,7 +36,7 @@ export class CrudController<T extends CrudEntity> {
     const { id } = newItem;
     const linkHeader = generateLocationHeader(req.url, id);
     res.set(linkHeader);
-    return id;
+    return newItem;
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
@@ -75,32 +75,16 @@ export class CrudController<T extends CrudEntity> {
     return items;
   }
 
-  @UseInterceptors(ClassSerializerInterceptor)
-  @Get('active')
-  async findActive(
-    @Query('fields') fields?: string,
-    @Query('skip') skip?: number | null,
-    @Query('take') take?: number | null,
-    @Query('relations') relations?: string[],
-  ) {
-    const selectedFields = fields.split(',');
-    return await this.service.findActive(selectedFields, skip, take, relations);
-  }
-
   @Get(':id')
   @Public()
   async findOne(@Param('id') id: string, @Query() query?) {
-    console.log(query);
+    console.log('q', id, query);
     return await this.service.findOne(+id, query);
   }
   @Get(':id/:relation')
   @Public()
-  async findOneWithRelation(
-    @Param('id') id: string,
-    @Param('relation') relation: string,
-    @Query() query?,
-  ) {
-    return await this.service.findOneWithRelations(+id, query, relation);
+  async findOneWithRelation(@Req() req: Request) {
+    return await this.service.findOneWithRelations(req);
   }
 
   @Patch(':id')
