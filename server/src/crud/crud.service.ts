@@ -6,6 +6,8 @@ import QueryString from 'qs';
 import { CrudEntity } from './crud.entity';
 import { ICrudService } from './crud.service.inerface';
 import {
+  generateFindAllQuery,
+  generateFindOneQuery,
   generateRelationQuery,
   getSearchQuery,
   getSelectedFields,
@@ -49,49 +51,16 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
   }
 
   async findAll(req: Request): Promise<[T[], number]> {
-    const { fields, page, limit, relations, order, filters, search } =
-      req.query;
-
-    const selectedFields = getSelectedFields(fields as string, this.metadata);
-    const selectedRelations = getSelectedRelations(
-      relations as string,
-      this.metadata,
-    );
-    const selectedOrder = getSelectedOrder(order as string, this.metadata);
-    const searchQuery = getSearchQuery(search as string, this.metadata);
-    const { take, skip } = getSelectedPagnation(
-      page as string,
-      limit as string,
-    );
-    const selectedFilters = getSelectedFilters(
-      filters as string,
-      this.metadata,
-    );
-
-    const filterAndSearch = [];
-
-    searchQuery
-      ? searchQuery.forEach((q) => {
-          filterAndSearch.push({ ...selectedFilters, ...q });
-        })
-      : '';
-
-    let selectedFiltersAndSearch;
-
-    filterAndSearch.length
-      ? (selectedFiltersAndSearch = filterAndSearch)
-      : (selectedFiltersAndSearch = selectedFilters);
-
-    // const rel = this.entityRepository.metadata.relations[0];
+    const { select, order, skip, take, relations, where } =
+      generateFindAllQuery(req, this.metadata);
 
     return (await this.entityRepository.findAndCount({
-      select: selectedFields,
-      order: selectedOrder,
+      select,
+      order,
       skip,
       take,
-      relations: selectedRelations,
-      // loadRelationIds: !selectedRelations,
-      where: selectedFiltersAndSearch,
+      relations,
+      where,
     })) as [T[], number];
   }
 
@@ -100,17 +69,12 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
     query: string | string[] | QueryString.ParsedQs | QueryString.ParsedQs[],
   ): Promise<T> {
     try {
-      const { fields, relations } = query as any;
-      const selectedFields = getSelectedFields(fields as string, this.metadata);
-      const selectedRelations = getSelectedRelations(
-        relations as string,
-        this.metadata,
-      );
+      const { select, relations } = generateFindOneQuery(query, this.metadata);
 
       const item = (await this.entityRepository.findOne({
         where: { id: Equal(id) },
-        select: selectedFields,
-        relations: selectedRelations,
+        select,
+        relations,
       })) as T;
 
       if (!item) throw new NotFoundException(`Item with id ${id} not found.`);

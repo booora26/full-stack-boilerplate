@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { Request } from 'express';
 import QueryString from 'qs';
 import {
   And,
@@ -337,6 +338,55 @@ export const getSelectedFilters = (
   });
 
   return selectedFilters;
+};
+
+export const generateFindAllQuery = (
+  req: Request,
+  metadata: EntityMetadata,
+) => {
+  const { fields, page, limit, relations, order, filters, search } = req.query;
+
+  const selectedFields = getSelectedFields(fields as string, metadata);
+  const selectedRelations = getSelectedRelations(relations as string, metadata);
+  const selectedOrder = getSelectedOrder(order as string, metadata);
+  const searchQuery = getSearchQuery(search as string, metadata);
+  const { take, skip } = getSelectedPagnation(page as string, limit as string);
+  const selectedFilters = getSelectedFilters(filters as string, metadata);
+
+  const filterAndSearch = [];
+
+  searchQuery
+    ? searchQuery.forEach((q) => {
+        filterAndSearch.push({ ...selectedFilters, ...q });
+      })
+    : '';
+
+  let selectedFiltersAndSearch: object;
+
+  filterAndSearch.length
+    ? (selectedFiltersAndSearch = filterAndSearch)
+    : (selectedFiltersAndSearch = selectedFilters);
+
+  return {
+    select: selectedFields,
+    order: selectedOrder,
+    skip,
+    take,
+    relations: selectedRelations,
+    where: selectedFiltersAndSearch,
+  };
+};
+
+export const generateFindOneQuery = (
+  query: string | string[] | QueryString.ParsedQs | QueryString.ParsedQs[],
+  metadata: EntityMetadata,
+) => {
+  const { fields, relations } = query as any;
+
+  const selectedFields = getSelectedFields(fields as string, metadata);
+  const selectedRelations = getSelectedRelations(relations as string, metadata);
+
+  return { select: selectedFields, relations: selectedRelations };
 };
 
 export const generateRelationQuery = (
