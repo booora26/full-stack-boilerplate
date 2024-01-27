@@ -1,8 +1,12 @@
-import { Request, Response } from 'express';
+import { Request } from 'express';
+import QueryString from 'qs';
 
 export interface ICrudService<T> {
   findAll(req?: Request): Promise<[T[], number]>;
-  findOne(id: number, query): Promise<T>;
+  findOne(
+    id: number,
+    query: string | string[] | QueryString.ParsedQs | QueryString.ParsedQs[],
+  ): Promise<T>;
   create(newEntity: T): Promise<T>;
   update(id: number, entity: T): Promise<T>;
   softRemove(id: number): void;

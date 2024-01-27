@@ -13,6 +13,7 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
+import QueryString from 'qs';
 import { CrudEntity } from './crud.entity';
 import { CrudService } from './crud.service';
 import { Public } from '../auth/decotators/public.decorator';
@@ -77,8 +78,12 @@ export class CrudController<T extends CrudEntity> {
 
   @Get(':id')
   @Public()
-  async findOne(@Param('id') id: string, @Query() query?) {
-    console.log('q', id, query);
+  async findOne(
+    @Param('id') id: string,
+    @Query()
+    query?: string | string[] | QueryString.ParsedQs | QueryString.ParsedQs[],
+  ) {
+    console.log('q', id, typeof query);
     return await this.service.findOne(+id, query);
   }
   @Get(':id/:relation')

@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Equal, EntityMetadata } from 'typeorm';
+import QueryString from 'qs';
 import { CrudEntity } from './crud.entity';
 import { ICrudService } from './crud.service.inerface';
 import {
@@ -18,7 +19,6 @@ import {
   createRelationEntities,
   getEntityRelations,
 } from './helpers/relations.helpers';
-import { ShopEntity } from '../shop/shop.entity';
 
 @Injectable()
 export class CrudService<T extends CrudEntity> implements ICrudService<T> {
@@ -85,7 +85,7 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       ? (selectedFiltersAndSearch = filterAndSearch)
       : (selectedFiltersAndSearch = selectedFilters);
 
-    const rel = this.entityRepository.metadata.relations[0];
+    // const rel = this.entityRepository.metadata.relations[0];
 
     return (await this.entityRepository.findAndCount({
       select: selectedFields,
@@ -98,10 +98,12 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
     })) as [T[], number];
   }
 
-  async findOne(id: number, query): Promise<T> {
+  async findOne(
+    id: number,
+    query: string | string[] | QueryString.ParsedQs | QueryString.ParsedQs[],
+  ): Promise<T> {
     try {
-      const { fields, relations } = query;
-      console.log('find one', fields, relations);
+      const { fields, relations } = query as any;
       const selectedFields = getSelectedFields(fields as string, this.metadata);
       const selectedRelations = getSelectedRelations(
         relations as string,
@@ -133,8 +135,6 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
         relation,
         this.metadata,
       );
-
-      console.log({ queryFields, queryRelations });
 
       const item = (await this.entityRepository.findOne({
         where,
