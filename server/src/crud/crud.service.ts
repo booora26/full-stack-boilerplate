@@ -15,10 +15,7 @@ import {
   getSelectedRelations,
 } from './helpers/query.helpers';
 import { Request } from 'express';
-import {
-  createRelationEntities,
-  getEntityRelations,
-} from './helpers/relations.helpers';
+import { createRelationEntities } from './helpers/relations.helpers';
 
 @Injectable()
 export class CrudService<T extends CrudEntity> implements ICrudService<T> {
