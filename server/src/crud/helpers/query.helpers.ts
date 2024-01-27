@@ -1,6 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
+import QueryString from 'qs';
 import {
   And,
+  EntityMetadata,
   Equal,
   ILike,
   In,
@@ -11,8 +13,12 @@ import {
   MoreThanOrEqual,
   Not,
 } from 'typeorm';
+import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 
-export const getSelectedFields = (fields: string, metadata): any => {
+export const getSelectedFields = (
+  fields: string,
+  metadata: EntityMetadata,
+): any => {
   if (!fields) return {};
   const possibleFields = metadata.columns.map((r) => r.propertyName);
 
@@ -35,7 +41,10 @@ export const getSelectedFields = (fields: string, metadata): any => {
   return selectedFields;
 };
 
-export const getSelectedRelations = (relations: string, metadata): any => {
+export const getSelectedRelations = (
+  relations: string,
+  metadata: EntityMetadata,
+): any => {
   if (!relations) return {};
 
   const selectedRelations = relations.split(',');
@@ -58,7 +67,7 @@ export const getSelectedRelations = (relations: string, metadata): any => {
   return selectedRelations;
 };
 
-export const getSelectedOrder = (order: string, metadata) => {
+export const getSelectedOrder = (order: string, metadata: EntityMetadata) => {
   if (!order) return {};
 
   const possibleFields = metadata.columns.map((r) => r.propertyName);
@@ -90,7 +99,7 @@ export const getSelectedOrder = (order: string, metadata) => {
   });
   return selectedOrder;
 };
-export const getSearchQuery = (search: string, metadata) => {
+export const getSearchQuery = (search: string, metadata: EntityMetadata) => {
   if (!search) return;
 
   if (search && typeof search == 'object')
@@ -143,7 +152,10 @@ export const getSelectedPagnation = (page: string, limit: string) => {
   return { take, skip };
 };
 
-export const getSelectedFilters = (filters: string, metadata) => {
+export const getSelectedFilters = (
+  filters: string,
+  metadata: EntityMetadata,
+) => {
   if (!filters) return {};
 
   if (filters && typeof filters == 'object')
@@ -151,10 +163,12 @@ export const getSelectedFilters = (filters: string, metadata) => {
       'Field FILTERS should be used only once in query.',
     );
 
-  const possibleFields = metadata.columns.map((r) => r.propertyName);
+  const possibleFields = metadata.columns.map(
+    (r: ColumnMetadata) => r.propertyName,
+  );
 
   const fieldTypes = new Object();
-  metadata.columns.map((c) => {
+  metadata.columns.map((c: ColumnMetadata) => {
     Object.assign(fieldTypes, { [c.propertyName]: c.type });
   });
 
@@ -301,7 +315,7 @@ export const getSelectedFilters = (filters: string, metadata) => {
           .toString()
           .replaceAll(',', ', ')} to perform ${i[1].toUpperCase()} operation.`,
       );
-    let field;
+    let field: any;
     const previousFilter = selectedFilters[i[0]];
     if (i[1] == FilterRule.IS_NULL) field = IsNull();
     if (i[1] == FilterRule.IS_NOT_NULL) field = Not(IsNull());
@@ -326,11 +340,19 @@ export const getSelectedFilters = (filters: string, metadata) => {
 };
 
 export const generateRelationQuery = (
-  id,
-  queryFields,
-  queryRelations,
-  relation,
-  metadata,
+  id: number,
+  queryFields:
+    | string
+    | string[]
+    | QueryString.ParsedQs
+    | QueryString.ParsedQs[],
+  queryRelations:
+    | string
+    | string[]
+    | QueryString.ParsedQs
+    | QueryString.ParsedQs[],
+  relation: string,
+  metadata: EntityMetadata,
 ) => {
   const relationMetadata = metadata.ownRelations.filter(
     (r) => r.propertyName === relation,
@@ -349,7 +371,9 @@ export const generateRelationQuery = (
 
   const relationFields = {};
   if (Object.entries(selectedFields).length > 0)
-    selectedFields.forEach((f) => Object.assign(relationFields, { [f]: true }));
+    selectedFields.forEach((f: string) =>
+      Object.assign(relationFields, { [f]: true }),
+    );
 
   Object.entries(selectedFields).length > 0
     ? (selectedFields = { [relation]: relationFields })
@@ -357,7 +381,7 @@ export const generateRelationQuery = (
 
   const relationRelations = {};
   if (Object.entries(selectedRelations).length > 0)
-    selectedRelations.forEach((f) =>
+    selectedRelations.forEach((f: string) =>
       Object.assign(relationRelations, { [f]: true }),
     );
 

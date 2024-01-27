@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Equal } from 'typeorm';
+import { Repository, Equal, EntityMetadata } from 'typeorm';
 import { CrudEntity } from './crud.entity';
 import { ICrudService } from './crud.service.inerface';
 import {
@@ -28,7 +28,7 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
     private eventEmitter: EventEmitter2,
   ) {}
 
-  metadata = this.entityRepository.metadata;
+  metadata: EntityMetadata = this.entityRepository.metadata;
 
   async create(newEntity: T): Promise<T> {
     try {
@@ -127,12 +127,14 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       const { id, relation } = req.params;
 
       const { where, select, relations } = generateRelationQuery(
-        id,
+        +id,
         queryFields,
         queryRelations,
         relation,
         this.metadata,
       );
+
+      console.log({ queryFields, queryRelations });
 
       const item = (await this.entityRepository.findOne({
         where,

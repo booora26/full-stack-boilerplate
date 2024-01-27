@@ -26,10 +26,4 @@ export class ShopController extends CrudController<ShopEntity> {
   ) {
     super(service);
   }
-
-
-  @Get('search/:keyword')
-  async search(@Param('keyword') keyword: string) {
-    return await this.service.search(keyword);
-  }
 }

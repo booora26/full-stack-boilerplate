@@ -1,6 +1,7 @@
-import { ManyToOne } from 'typeorm';
+import { EntityMetadata } from 'typeorm';
+import { CrudEntity } from '../crud.entity';
 
-export const getEntityRelations = (metadata) => {
+export const getEntityRelations = (metadata: EntityMetadata) => {
   const oneToMany = metadata.oneToManyRelations.map((r) => r.propertyName);
 
   const manyToOne = metadata.manyToOneRelations.map((r) => r.propertyName);
@@ -10,7 +11,10 @@ export const getEntityRelations = (metadata) => {
   return { oneToMany, manyToOne, manyToMany };
 };
 
-export const createRelationEntities = (metadata, newEntity): any => {
+export const createRelationEntities = (
+  metadata: EntityMetadata,
+  newEntity: Partial<CrudEntity>,
+): any => {
   const { oneToMany, manyToMany } = getEntityRelations(metadata);
 
   const allRelations = {};
@@ -23,7 +27,10 @@ export const createRelationEntities = (metadata, newEntity): any => {
   return allRelations;
 };
 
-export const getManyRelationEntities = (metadata, newEntity) => {
+export const getManyRelationEntities = (
+  metadata: EntityMetadata,
+  newEntity: Partial<CrudEntity>,
+) => {
   const existingRelations = [];
   metadata.relations.forEach((r) => {
     if (newEntity[r.propertyName]) existingRelations.push(r.propertyName);
