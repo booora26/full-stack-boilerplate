@@ -9,15 +9,13 @@ import {
   generateFindAllQuery,
   generateFindOneQuery,
   generateRelationQuery,
-  getSearchQuery,
-  getSelectedFields,
-  getSelectedFilters,
-  getSelectedOrder,
-  getSelectedPagnation,
-  getSelectedRelations,
 } from './helpers/query.helpers';
 import { Request } from 'express';
 import { createRelationEntities } from './helpers/relations.helpers';
+import {
+  generateMetadataLinks,
+  generateSelfLink,
+} from './helpers/metadata.helpers';
 
 @Injectable()
 export class CrudService<T extends CrudEntity> implements ICrudService<T> {
@@ -54,7 +52,7 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
     const { select, order, skip, take, relations, where } =
       generateFindAllQuery(req, this.metadata);
 
-    return (await this.entityRepository.findAndCount({
+    const [items, count] = (await this.entityRepository.findAndCount({
       select,
       order,
       skip,
@@ -62,11 +60,16 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       relations,
       where,
     })) as [T[], number];
+
+    items.map((i) => Object.assign(i, generateSelfLink(req, i.id)));
+
+    return [items, count];
   }
 
   async findOne(
     id: number,
     query: string | string[] | QueryString.ParsedQs | QueryString.ParsedQs[],
+    req?: Request,
   ): Promise<T> {
     try {
       const { select, relations } = generateFindOneQuery(query, this.metadata);
@@ -78,6 +81,10 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       })) as T;
 
       if (!item) throw new NotFoundException(`Item with id ${id} not found.`);
+
+      const links = generateMetadataLinks(this.metadata, req);
+
+      Object.assign(item, links);
 
       return item;
     } catch (err) {
@@ -104,6 +111,8 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
       })) as T;
 
       if (!item) throw new NotFoundException(`Item with id ${id} not found.`);
+
+      item[relation].map((i) => Object.assign(i, generateSelfLink(req, i.id)));
 
       return item[relation];
     } catch (err) {
@@ -171,11 +180,9 @@ export class CrudService<T extends CrudEntity> implements ICrudService<T> {
         existingEntity,
       )) as T;
 
-      console.log(savedEntity);
       this.eventEmitter.emit('entity.updated', savedEntity);
       return savedEntity;
     } catch (err) {
-      console.log(err);
       throw err;
     }
   }

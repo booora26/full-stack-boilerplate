@@ -82,14 +82,24 @@ export class CrudController<T extends CrudEntity> {
     @Param('id') id: string,
     @Query()
     query?: string | string[] | QueryString.ParsedQs | QueryString.ParsedQs[],
+    @Req() req?: Request,
   ) {
     console.log('q', id, typeof query);
-    return await this.service.findOne(+id, query);
+    return await this.service.findOne(+id, query, req);
   }
   @Get(':id/:relation')
   @Public()
   async findOneWithRelation(@Req() req: Request) {
     return await this.service.findOneWithRelations(req);
+  }
+  @Get(':id/:relation/:relationId')
+  @Public()
+  async redirect(
+    @Param('relation') relation: string,
+    @Param('relationId') relationId: number,
+    @Res() res: Response,
+  ) {
+    return res.redirect(`/${relation}/${relationId}`);
   }
 
   @Patch(':id')

@@ -5,6 +5,7 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
+  Relation,
 } from 'typeorm';
 import { ServiceEntity } from '../services/service.entity';
 import { ShopEntity } from '../shop/shop.entity';
@@ -25,7 +26,7 @@ export class EmployeeEntity extends CrudEntity {
   @OneToMany(() => AppointmentEntity, (appointement) => appointement.employee)
   appointements: AppointmentEntity;
   @ManyToOne(() => ShopEntity, (shop) => shop.employees)
-  shop: ShopEntity;
+  shop: Relation<ShopEntity>;
   // @Column({ nullable: true })
   // shopId: number;
   @OneToMany(() => RateEntity, (rate) => rate.employee)

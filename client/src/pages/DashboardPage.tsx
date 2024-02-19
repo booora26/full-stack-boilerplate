@@ -8,6 +8,7 @@ import { BP } from "../components/BP";
 import { Campaign } from "../components/Campaign";
 import { CLIENT_DEV_URL, CLIENT_PROD_URL, SERVER_DEV_URL, SERVER_PROD_URL } from "../constants";
 import { getFreeAppointmentByEmployee } from "../api/appointements";
+import Report from "../components/Report";
 
 const serverURL =
 process.env.NODE_ENV === 'DEVELOPMENT'
@@ -63,6 +64,12 @@ export default function DashboardPage() {
           </Button>
         </Link>
       </Space>
+
+<br />
+
+<Space direction="horizontal" style={{marginTop: "10px"}}>
+  <Report />
+</Space>
 
       <Flex gap="middle" wrap="wrap" vertical>
         <Flex gap="middle" wrap="wrap">
